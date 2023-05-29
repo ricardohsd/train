@@ -1,4 +1,5 @@
 %{
+  "abacus": {:hex, :abacus, "0.4.2", "632837177bd534e55a520d373b7195bc9bfcbc9425fefb5e93e3cf3336ba9737", [:mix], [], "hexpm", "2e7bd7c0ba2a594808d42c1b946f11c47bf8254506403031958b58054c807986"},
   "castore": {:hex, :castore, "1.0.2", "0c6292ecf3e3f20b7c88408f00096337c4bfd99bd46cc2fe63413ddbe45b3573", [:mix], [], "hexpm", "40b2dd2836199203df8500e4a270f10fc006cc95adc8a319e148dc3077391d96"},
   "certifi": {:hex, :certifi, "2.9.0", "6f2a475689dd47f19fb74334859d460a2dc4e3252a3324bd2111b8f0429e7e21", [:rebar3], [], "hexpm", "266da46bdb06d6c6d35fde799bcb28d36d985d424ad7c08b5bb48f5b5cdd4641"},
   "ex_tiktoken": {:hex, :ex_tiktoken, "0.1.1", "9fb71dfe1f1a9cb7efc2023937d3719a03a883e6555c513b06a0c0f5e3e8c1ba", [:mix], [{:rustler, "~> 0.27.0", [hex: :rustler, repo: "hexpm", optional: false]}, {:rustler_precompiled, "~> 0.6", [hex: :rustler_precompiled, repo: "hexpm", optional: false]}], "hexpm", "28c278d2e278e3338a3bda056459ec599c514e68229313aa7da9a1f9fe7230f7"},

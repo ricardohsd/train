@@ -1,0 +1,19 @@
+[
+  {
+    "request": {
+      "body": "",
+      "headers": [],
+      "method": "get",
+      "options": [],
+      "request_body": "",
+      "url": "https://serpapi.com/search.json?api_key=nokey&engine=google&google_domain=google.com&q=population+of+germany"
+    },
+    "response": {
+      "binary": false,
+      "body": "timeout",
+      "headers": [],
+      "status_code": null,
+      "type": "error"
+    }
+  }
+]
