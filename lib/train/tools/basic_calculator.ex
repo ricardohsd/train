@@ -15,6 +15,7 @@ defmodule Train.Tools.BasicCalculator do
   def description() do
     "Calculate matematical questions, like age of a person, distance, etc"
   end
+
   @impl true
   @spec query(String.t()) :: {:error, any} | {:ok, number}
   def query(text) do

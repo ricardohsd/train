@@ -12,11 +12,10 @@ defmodule Train.Chains.ConversationChain do
     {:ok, memory_pid} = Train.Memory.BufferAgent.start_link()
     tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
     chain = Train.LlmChain.new(%{memory_pid: memory_pid, tools: tools})
-    {:ok, messages, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")
-    {:ok, messages, response} = chain |> Train.Chains.ConversationChain.run("Where was she born?")
+    {:ok, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")
+    {:ok, response} = chain |> Train.Chains.ConversationChain.run("Where was she born?")
   """
-  @spec run(LlmChain.t(), String.t()) ::
-          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+  @spec run(LlmChain.t(), String.t()) :: {:ok, String.t()} | {:error, String.t()}
   def run(
         %LlmChain{
           memory_pid: memory_pid
@@ -32,7 +31,7 @@ defmodule Train.Chains.ConversationChain do
              chat_history
            ),
          :ok <- BufferAgent.put_many(memory_pid, messages) do
-      {:ok, messages, response}
+      {:ok, response}
     else
       err -> err
     end
