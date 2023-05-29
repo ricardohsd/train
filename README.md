@@ -1,4 +1,4 @@
-# Train
+# Train 🚂🚂🚂
 
 `Train` is an attempt of providing a set of tools for building applications with LLM. This project is heavily inspired on [LangChain](https://github.com/hwchase17/langchain).
 
