@@ -1,0 +1,23 @@
+[
+  {
+    "request": {
+      "body": "{\"input\":\"what is the meaning of life?\",\"model\":\"text-embedding-ada-002\"}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer nil"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.openai.com/v1/embeddings"
+    },
+    "response": {
+      "binary": false,
+      "body": "timeout",
+      "headers": [],
+      "status_code": null,
+      "type": "error"
+    }
+  }
+]

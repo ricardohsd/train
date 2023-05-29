@@ -1,0 +1,35 @@
+[
+  {
+    "request": {
+      "body": "{\"input\":\"what is the meaning of life?\",\"model\":\"text-embedding-ada-002\"}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer nil"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.openai.com/v1/embeddings"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n    \"error\": {\n        \"message\": \"Incorrect API key provided: nil. You can find your API key at https://platform.openai.com/account/api-keys.\",\n        \"type\": \"invalid_request_error\",\n        \"param\": null,\n        \"code\": \"invalid_api_key\"\n    }\n}\n",
+      "headers": {
+        "Date": "Mon, 24 Apr 2023 21:22:20 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Length": "253",
+        "Connection": "keep-alive",
+        "vary": "Origin",
+        "x-request-id": "1e06dbbd6320a4012d05661a423d7337",
+        "strict-transport-security": "max-age=15724800; includeSubDomains",
+        "CF-Cache-Status": "DYNAMIC",
+        "Server": "cloudflare",
+        "CF-RAY": "7bd166abb94d44f8-TXL",
+        "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400"
+      },
+      "status_code": 401,
+      "type": "ok"
+    }
+  }
+]

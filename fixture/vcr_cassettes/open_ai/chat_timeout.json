@@ -1,0 +1,26 @@
+[
+  {
+    "request": {
+      "body": "{\"max_tokens\":4096,\"messages\":[{\"content\":\"what is the meaning of life?\",\"role\":\"user\"}],\"model\":\"gpt-4\",\"temperature\":0.5}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer key"
+      },
+      "method": "post",
+      "options": {
+        "recv_timeout": 20000,
+        "connect_timeout": 20000
+      },
+      "request_body": "",
+      "url": "https://api.openai.com/v1/chat/completions"
+    },
+    "response": {
+      "binary": false,
+      "body": "timeout",
+      "headers": [],
+      "status_code": null,
+      "type": "error"
+    }
+  }
+]

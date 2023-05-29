@@ -1,0 +1,49 @@
+[
+  {
+    "request": {
+      "body": "{\"max_tokens\":2048,\"messages\":[{\"content\":\"How many continents exist?\",\"role\":\"user\"}],\"model\":\"gpt-3.5-turbo\",\"temperature\":0.5}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer key"
+      },
+      "method": "post",
+      "options": {
+        "recv_timeout": 20000,
+        "connect_timeout": 20000
+      },
+      "request_body": "",
+      "url": "https://api.openai.com/v1/chat/completions"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\"id\":\"chatcmpl-7LYKrVWtdJdHcrr3OA1fEuVnMLFib\",\"object\":\"chat.completion\",\"created\":1685371229,\"model\":\"gpt-3.5-turbo-0301\",\"usage\":{\"prompt_tokens\":13,\"completion_tokens\":25,\"total_tokens\":38},\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"There are seven continents: Africa, Antarctica, Asia, Australia/Oceania, Europe, North America, and South America.\"},\"finish_reason\":\"stop\",\"index\":0}]}\n",
+      "headers": {
+        "Date": "Mon, 29 May 2023 14:40:32 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "400",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "Cache-Control": "no-cache, must-revalidate",
+        "openai-model": "gpt-3.5-turbo-0301",
+        "openai-organization": "user-abdrb7kryrst1ijaec9czl0wq",
+        "openai-processing-ms": "2525",
+        "openai-version": "2020-10-01",
+        "strict-transport-security": "max-age=15724800; includeSubDomains",
+        "x-ratelimit-limit-requests": "3500",
+        "x-ratelimit-limit-tokens": "90000",
+        "x-ratelimit-remaining-requests": "3499",
+        "x-ratelimit-remaining-tokens": "87943",
+        "x-ratelimit-reset-requests": "17ms",
+        "x-ratelimit-reset-tokens": "1.37s",
+        "x-request-id": "fd9f83806e6901e5dac54a384c252ba2",
+        "CF-Cache-Status": "DYNAMIC",
+        "Server": "cloudflare",
+        "CF-RAY": "7cef7e28baff267d-TXL",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

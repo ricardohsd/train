@@ -1,0 +1,49 @@
+[
+  {
+    "request": {
+      "body": "{\"max_tokens\":2048,\"messages\":[{\"content\":\"What are continents?\",\"role\":\"user\"}],\"model\":\"gpt-3.5-turbo\",\"temperature\":0.5}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer key"
+      },
+      "method": "post",
+      "options": {
+        "recv_timeout": 20000,
+        "connect_timeout": 20000
+      },
+      "request_body": "",
+      "url": "https://api.openai.com/v1/chat/completions"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\"id\":\"chatcmpl-7LYHjwliYT5MfjLwJmpaKY9X4gt03\",\"object\":\"chat.completion\",\"created\":1685371035,\"model\":\"gpt-3.5-turbo-0301\",\"usage\":{\"prompt_tokens\":12,\"completion_tokens\":62,\"total_tokens\":74},\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"Continents are large, continuous land masses on the Earth's surface that are separated by oceans or other bodies of water. There are seven continents on Earth: Africa, Antarctica, Asia, Australia, Europe, North America, and South America. Each continent has its own unique geography, climate, and natural resources.\"},\"finish_reason\":\"stop\",\"index\":0}]}\n",
+      "headers": {
+        "Date": "Mon, 29 May 2023 14:37:21 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "601",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "Cache-Control": "no-cache, must-revalidate",
+        "openai-model": "gpt-3.5-turbo-0301",
+        "openai-organization": "user-abdrb7kryrst1ijaec9czl0wq",
+        "openai-processing-ms": "6337",
+        "openai-version": "2020-10-01",
+        "strict-transport-security": "max-age=15724800; includeSubDomains",
+        "x-ratelimit-limit-requests": "3500",
+        "x-ratelimit-limit-tokens": "90000",
+        "x-ratelimit-remaining-requests": "3499",
+        "x-ratelimit-remaining-tokens": "87946",
+        "x-ratelimit-reset-requests": "17ms",
+        "x-ratelimit-reset-tokens": "1.369s",
+        "x-request-id": "9737f7a007c2245d13deaa6509a5d448",
+        "CF-Cache-Status": "DYNAMIC",
+        "Server": "cloudflare",
+        "CF-RAY": "7cef7969abd2aca9-TXL",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

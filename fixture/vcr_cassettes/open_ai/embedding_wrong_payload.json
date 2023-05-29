@@ -1,0 +1,41 @@
+[
+  {
+    "request": {
+      "body": "{\"input\":\"what is the meaning of life?\",\"model\":\"text-embedding-ada-002\"}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer key"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.openai.com/v1/embeddings"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n",
+      "headers": {
+        "Date": "Mon, 24 Apr 2023 20:56:58 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "33482",
+        "Connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "openai-organization": "user-abdrb7kryrst1ijaec9czl0wq",
+        "openai-processing-ms": "173",
+        "openai-version": "2020-10-01",
+        "strict-transport-security": "max-age=15724800; includeSubDomains",
+        "x-ratelimit-limit-requests": "3000",
+        "x-ratelimit-remaining-requests": "2999",
+        "x-ratelimit-reset-requests": "20ms",
+        "x-request-id": "0de36876688dc971c4f88a79d13fb784",
+        "CF-Cache-Status": "DYNAMIC",
+        "Server": "cloudflare",
+        "CF-RAY": "7bd14182dfd04510-TXL",
+        "alt-svc": "h3=\":443\"; ma=86400, h3-29=\":443\"; ma=86400"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]
