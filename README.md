@@ -18,7 +18,7 @@ end
 
 ```elixir
 {:ok, memory_pid} = Train.Memory.BufferAgent.start_link()
-tools = [Train.Tools.Calculator, Train.Tools.SerpApi]
+tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
 chain = Train.LlmChain.new(%{memory_pid: memory_pid, tools: tools})
 
 {:ok, messages, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")

@@ -8,7 +8,7 @@ defmodule Train.Agents.ConversationalChatAgentTest do
   setup_all do
     Logger.configure(level: :warning)
     HTTPoison.start()
-    tools = [Train.Tools.Calculator, Train.Tools.SerpApi]
+    tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
 
     chain =
       Train.LlmChain.new(%{

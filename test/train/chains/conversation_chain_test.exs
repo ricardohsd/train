@@ -15,7 +15,7 @@ defmodule Train.Chains.ConversationChainTest do
 
   test "memory agent's pid must be present" do
     {:error, error} =
-      %LlmChain{tools: [Train.Tools.Calculator], openai_config: OpenAIConfig.new()}
+      %LlmChain{tools: [Train.Tools.BasicCalculator], openai_config: OpenAIConfig.new()}
       |> ConversationChain.run("What is a continent?")
 
     assert "memory agent pid can't be null" == error
@@ -23,7 +23,7 @@ defmodule Train.Chains.ConversationChainTest do
 
   test "OpenAI config must be present" do
     {:error, error} =
-      %LlmChain{tools: [Train.Tools.Calculator], openai_config: nil, memory_pid: self()}
+      %LlmChain{tools: [Train.Tools.BasicCalculator], openai_config: nil, memory_pid: self()}
       |> ConversationChain.run("What is a continent?")
 
     assert "OpenAI config can't be null" == error
@@ -32,7 +32,7 @@ defmodule Train.Chains.ConversationChainTest do
   test "max_iterations mus be higher than 0" do
     {:error, error} =
       %LlmChain{
-        tools: [Train.Tools.Calculator],
+        tools: [Train.Tools.BasicCalculator],
         openai_config: OpenAIConfig.new(),
         memory_pid: self(),
         max_iterations: 0
