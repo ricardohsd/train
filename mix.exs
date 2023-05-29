@@ -33,7 +33,8 @@ defmodule Train.MixProject do
       {:jason, "~> 1.2"},
       {:ex_tiktoken, "~> 0.1.1"},
       {:abacus, "~> 0.4.2"},
-      {:exvcr, "~> 0.11", only: :test}
+      {:exvcr, "~> 0.11", only: :test},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
