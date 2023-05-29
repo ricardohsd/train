@@ -9,10 +9,13 @@ defmodule Train.MixProject do
       app: :train,
       version: @version,
       elixir: "~> 1.14",
+      description: "LLM chain for Elixir",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @url,
-      homepage_url: @url
+      homepage_url: @url,
+      licenses: licenses(),
+      package: package()
     ]
   end
 
@@ -31,8 +34,16 @@ defmodule Train.MixProject do
       {:ex_tiktoken, "~> 0.1.1"},
       {:abacus, "~> 0.4.2"},
       {:exvcr, "~> 0.11", only: :test}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+    ]
+  end
+
+  defp licenses, do: ~w(MIT)
+
+  defp package do
+    [
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
+      licenses: ["MIT"],
+      links: %{"GitHub" => @url}
     ]
   end
 end
