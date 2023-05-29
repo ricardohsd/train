@@ -1,13 +1,18 @@
 defmodule Train.MixProject do
   use Mix.Project
 
+  @version "0.0.1-dev"
+  @url "https://github.com/ricardohsd/train"
+
   def project do
     [
       app: :train,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      source_url: @url,
+      homepage_url: @url
     ]
   end
 
