@@ -1,12 +1,14 @@
 defmodule Train.LlmChain do
   alias Train.ToolSpec
   alias Train.Clients.OpenAIConfig
+  alias Train.Clients.Pinecone
   alias Train.PromptSpec
   alias Train.Agents.ConversationalChatPrompts
 
   defstruct max_iterations: 5,
             memory_pid: nil,
             openai_config: OpenAIConfig.new(),
+            pinecone_config: %Pinecone.Config{},
             log_level: :info,
             tools: [],
             prompts: ConversationalChatPrompts
@@ -15,6 +17,7 @@ defmodule Train.LlmChain do
           max_iterations: integer(),
           memory_pid: pid(),
           openai_config: OpenAIConfig.t(),
+          pinecone_config: Pinecone.Config.t(),
           log_level: atom(),
           tools: list(ToolSpec.t()),
           prompts: PromptSpec.t()

@@ -7,21 +7,26 @@ defmodule Train.Clients.Pinecone do
   """
   require Logger
 
-  @type params :: %{
-          required(:vector) => [float()],
-          required(:namespace) => String.t(),
-          optional(:topK) => integer()
-        }
+  @type embeddings :: [float()]
+
+  defmodule Config do
+    defstruct namespace: nil, topK: 1
+
+    @type t :: %{
+            required(:namespace) => String.t(),
+            optional(:topK) => integer()
+          }
+  end
 
   @doc """
   Vectory similarity query.
   """
-  @spec query(params()) :: {:ok, term()} | {:error, term()}
-  def query(%{vector: vector, namespace: namespace} = params) do
+  @spec query(embeddings, Config.t()) :: {:ok, term()} | {:error, term()}
+  def query(embeddings, %{namespace: namespace} = config) do
     body =
       Jason.encode!(%{
-        "vector" => vector,
-        "topK" => params[:topK] || 4,
+        "vector" => embeddings,
+        "topK" => config.topK || 4,
         "includeValues" => true,
         "includeMetadata" => true,
         "namespace" => namespace

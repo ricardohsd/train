@@ -21,7 +21,7 @@ defmodule Train.Clients.PineconeTest do
 
     use_cassette "pinecone/embedding" do
       {:ok, %{"matches" => matches}} =
-        Pinecone.query(%{vector: embeddings, namespace: nil, topK: 2})
+        Pinecone.query(embeddings, %Pinecone.Config{namespace: nil, topK: 2})
 
       assert length(matches) == 2
 
@@ -39,7 +39,7 @@ defmodule Train.Clients.PineconeTest do
   test "with nil embeddings" do
     use_cassette "pinecone/nil" do
       {:error, %HTTPoison.Response{status_code: 400}} =
-        Pinecone.query(%{vector: nil, namespace: nil})
+        Pinecone.query(nil, %Pinecone.Config{namespace: nil})
     end
   end
 end
