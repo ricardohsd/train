@@ -2,12 +2,7 @@ defmodule Train.Agents.PromptSpec do
   @type t :: module()
 
   @doc """
-  Defines the system message.
+  Returns the raw prompt template.
   """
-  @callback system_message() :: String.t()
-
-  @doc """
-  Defines the human message.
-  """
-  @callback human_message() :: String.t()
+  @callback to_s() :: String.t()
 end

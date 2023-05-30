@@ -11,7 +11,8 @@ defmodule Train.LlmChain do
             pinecone_config: %Pinecone.Config{},
             log_level: :info,
             tools: [],
-            prompts: ConversationalChatPrompts
+            system_prompt: ConversationalChatPrompts.SystemPrompt,
+            human_prompt: ConversationalChatPrompts.HumanPrompt
 
   @type t :: %__MODULE__{
           max_iterations: integer(),
@@ -20,7 +21,8 @@ defmodule Train.LlmChain do
           pinecone_config: Pinecone.Config.t(),
           log_level: atom(),
           tools: list(ToolSpec.t()),
-          prompts: PromptSpec.t()
+          system_prompt: PromptSpec.t(),
+          human_prompt: PromptSpec.t()
         }
 
   @doc """

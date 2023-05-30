@@ -19,8 +19,8 @@ defmodule Train.Agents.ConversationalChatAgent do
   """
   @spec call(LlmChain.t(), String.t(), String.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
-  def call(%LlmChain{tools: tools, prompts: prompts} = chain, question, chat_history \\ []) do
-    prompt = create_prompt(prompts, question, tools, chat_history) |> PromptBuilder.build()
+  def call(%LlmChain{tools: tools} = chain, question, chat_history \\ []) do
+    prompt = create_prompt(chain, question, tools, chat_history) |> PromptBuilder.build()
 
     messages = [
       %{role: "system", content: prompt}
@@ -71,17 +71,22 @@ defmodule Train.Agents.ConversationalChatAgent do
   Creates the system prompt for the agent.
   """
   @spec create_prompt(
-          PromptSpec.t(),
+          LlmChain.t(),
           String.t(),
           list(ToolSpec.t()),
           list(String.t())
         ) :: list(String.t())
-  def create_prompt(prompts, input, tools, chat_history \\ []) do
-    final_prompt = human_prompt(prompts.human_message(), tools) |> format(:input, input)
+  def create_prompt(
+        %LlmChain{system_prompt: system_prompt, human_prompt: human_prompt},
+        input,
+        tools,
+        chat_history \\ []
+      ) do
+    final_prompt = human_prompt(human_prompt.to_s(), tools) |> format(:input, input)
     history = chat_history |> Enum.join("\n") |> String.trim()
 
     [
-      {:system, prompts.system_message()},
+      {:system, system_prompt.to_s()},
       {:chat_history, history},
       {:human, final_prompt}
     ]
