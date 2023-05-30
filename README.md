@@ -14,8 +14,10 @@ def deps do
 end
 ```
 
-## Example
+## Examples
 
+### Conversational agent
+Designed to be used on conversational scenarios. It will use the given tools, and buffers the memory to remember previous conversations.
 ```elixir
 {:ok, memory_pid} = Train.Memory.BufferAgent.start_link()
 tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
@@ -26,6 +28,18 @@ chain = Train.LlmChain.new(%{memory_pid: memory_pid, tools: tools})
 
 {:ok, response} = chain |> Train.Chains.ConversationChain.run("Where was she born?")
 # Angela Merkel was born in Hamburg, Germany.
+```
+
+### Vector ask agent
+Allows asking questions to documents ingested on Pinecone.
+Example: Given that cooking recipes were ingested on the `food` namespace, the following can be used to retrieve recipes.
+```elixir
+chain =
+  Train.LlmChain.new(%{
+    pinecone_config: %Train.Clients.Pinecone.Config{namespace: "food", topK: 5}
+  })
+{:ok, history, response} =
+  Train.Agents.VectorAgent.call(chain, "How to bake pão de queijo?", Train.Agents.VectorPrompt)
 ```
 
 ## Goals
