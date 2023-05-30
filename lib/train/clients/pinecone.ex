@@ -21,7 +21,7 @@ defmodule Train.Clients.Pinecone do
   @doc """
   Vectory similarity query.
   """
-  @spec query(embeddings, Config.t()) :: {:ok, term()} | {:error, term()}
+  @spec query(embeddings(), Config.t()) :: {:ok, term()} | {:error, term()}
   def query(embeddings, %{namespace: namespace} = config) do
     body =
       Jason.encode!(%{
@@ -32,7 +32,7 @@ defmodule Train.Clients.Pinecone do
         "namespace" => namespace
       })
 
-    case HTTPoison.post(url(), body, headers()) do
+    case HTTPoison.post(url("query"), body, headers()) do
       {:ok, %HTTPoison.Response{status_code: code, body: body}}
       when is_integer(code) and code >= 200 and code < 300 ->
         Jason.decode(body)
@@ -47,10 +47,43 @@ defmodule Train.Clients.Pinecone do
     end
   end
 
-  defp url() do
+  @spec upsert(embeddings(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def upsert(vectors, %{namespace: namespace}) do
+    body =
+      %{
+        namespace: namespace,
+        vectors:
+          Enum.map(vectors, fn vector ->
+            %{id: UUID.uuid4(), values: vector}
+          end)
+      }
+      |> Jason.encode!()
+
+    case HTTPoison.post(url("vectors/upsert"), body, headers()) do
+      {:ok, %HTTPoison.Response{status_code: code, body: body}}
+      when is_integer(code) and code >= 200 and code < 300 ->
+        {:ok, %{"upsertedCount" => upsertedCount} = resp} = Jason.decode(body)
+
+        if is_nil(upsertedCount) do
+          {:error, resp}
+        else
+          {:ok, upsertedCount}
+        end
+
+      {:ok, %HTTPoison.Response{status_code: code, body: body}}
+      when is_integer(code) and code >= 300 ->
+        {:error, body}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("Pinecone call errored with #{reason}")
+        {:error, reason}
+    end
+  end
+
+  defp url(path) do
     pinecone_index = System.get_env("PINECONE_INDEX_NAME")
     pinecone_env = System.get_env("PINECONE_API_ENV")
-    "https://#{pinecone_index}.svc.#{pinecone_env}.pinecone.io/query"
+    "https://#{pinecone_index}.svc.#{pinecone_env}.pinecone.io/#{path}"
   end
 
   defp headers() do
