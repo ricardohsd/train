@@ -8,10 +8,10 @@ defmodule Train.Agents.VectorAgent do
   alias Train.LlmChain
   alias Train.Clients.OpenAI
   alias Train.Clients.Pinecone
-  alias Train.Agents.VectorPrompt
+  alias Train.Agents.VectorPromptSpec
   alias Train.Utilities.VectorDocument
 
-  @spec call(LlmChain.t(), String.t(), VectorPrompt.t()) ::
+  @spec call(LlmChain.t(), String.t(), VectorPromptSpec.t()) ::
           {:ok, String.t()} | {:error, String.t()}
   def call(
         %LlmChain{openai_config: openai_config, pinecone_config: pinecone_config} = chain,

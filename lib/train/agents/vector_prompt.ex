@@ -1,6 +1,7 @@
 defmodule Train.Agents.VectorPrompt do
-  @type t :: module()
+  @behaviour Train.Agents.VectorPromptSpec
 
+  @impl true
   def with(question, context, metadata) do
     "You are an IA that answer and explain questions.
 Only create answers based on the context given.
