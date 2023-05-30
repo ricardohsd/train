@@ -1,0 +1,29 @@
+[
+  {
+    "request": {
+      "body": "{\"includeMetadata\":true,\"includeValues\":true,\"namespace\":null,\"topK\":4,\"vector\":null}",
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Api-Key": "nope"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://.svc..pinecone.io/query"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\"code\":3,\"message\":\"No query provided\",\"details\":[]}",
+      "headers": {
+        "content-type": "application/json",
+        "date": "Tue, 25 Apr 2023 11:40:02 GMT",
+        "x-envoy-upstream-service-time": "1",
+        "content-length": "53",
+        "server": "envoy"
+      },
+      "status_code": 400,
+      "type": "ok"
+    }
+  }
+]
