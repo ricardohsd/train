@@ -4,6 +4,7 @@ defmodule Train.Utilities.VectorDocumentTest do
 
   alias Train.Clients.OpenAI
   alias Train.Clients.OpenAIConfig
+  alias Train.Clients.PineconeConfig
   alias Train.Clients.Pinecone
   alias Train.Utilities.VectorDocument
 
@@ -23,7 +24,7 @@ defmodule Train.Utilities.VectorDocumentTest do
 
       resp =
         use_cassette "pinecone/embedding" do
-          Pinecone.query(embeddings, %Pinecone.Config{namespace: nil, topK: 2})
+          Pinecone.query(embeddings, %PineconeConfig{namespace: nil, topK: 2})
         end
 
       subject = VectorDocument.parse(resp)
@@ -40,9 +41,22 @@ defmodule Train.Utilities.VectorDocumentTest do
 
     test "when given empty pinecone response" do
       use_cassette "pinecone/nil" do
-        assert Pinecone.query(nil, %Pinecone.Config{namespace: nil})
+        assert Pinecone.query(nil, %PineconeConfig{namespace: nil})
                |> VectorDocument.parse() == nil
       end
     end
+  end
+
+  test "uses empty string when text not given" do
+    subject =
+      VectorDocument.parse(%{
+        "matches" => [
+          %{"metadata" => %{"about" => "Foo"}},
+          %{"metadata" => %{"about" => "Bar"}}
+        ]
+      })
+
+    assert subject.text == ""
+    assert subject.metadata == "{\"about\":\"Bar\"}{\"about\":\"Foo\"}"
   end
 end

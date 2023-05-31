@@ -7,7 +7,6 @@ defmodule Train.Agents.ConversationalChatAgent do
   alias Train.Clients.OpenAI
   alias Train.ToolSpec
   alias Train.Agents.OutputParser
-  alias Train.Agents.PromptSpec
   alias Train.PromptBuilder
   alias Train.LlmChain
 

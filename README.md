@@ -36,10 +36,38 @@ Example: Given that cooking recipes were ingested on the `food` namespace, the f
 ```elixir
 chain =
   Train.LlmChain.new(%{
-    pinecone_config: %Train.Clients.Pinecone.Config{namespace: "food", topK: 5}
+    pinecone_config:
+      Train.Clients.PineconeConfig.new(%{
+        namespace: "food",
+        topK: 5,
+        index: "localtest",
+        project: "1234567"
+      })
   })
 {:ok, history, response} =
   Train.Agents.VectorAgent.call(chain, "How to bake pão de queijo?", Train.Agents.VectorPrompt)
+```
+
+## Vector ingestion
+Provides a way to ingest texts into the vector database (Pinecone) to be queried later.
+The texts will be encoded in tokens using [ExTiktoken](https://github.com/ricardohsd/ex_tiktoken) and splitted in chunks.
+```elixir
+text = "Cascão da Silva Pereira Alves (born January 14, 1969) is an Brazilian musician. He is the founder of the rock band Casca Dura, for which he is the lead singer, guitarist, and principal songwriter. Prior to forming Casca Dura, he was the drummer of rock band Solitarios from 1990 to 1994."
+chain =
+  Train.LlmChain.new(%{
+    pinecone_config:
+      Train.Clients.PineconeConfig.new(%{
+        namespace: "food",
+        topK: 5,
+        index: "localtest",
+        project: "1234567"
+      })
+  })
+
+Train.Agents.VectorIngestion.ingest(chain, text, %{about: "Langchain"}, 30)
+{:ok, _history, response} =
+  Train.Agents.VectorAgent.call(chain, "Who is Cascão Pereira?", Train.Agents.VectorPrompt)
+# "Cascão Pereira, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, where he serves as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context provided"
 ```
 
 ## Goals

@@ -10,7 +10,7 @@
       "method": "post",
       "options": [],
       "request_body": "",
-      "url": "https://.svc..pinecone.io/query"
+      "url": "https://-.svc..pinecone.io/query"
     },
     "response": {
       "binary": false,

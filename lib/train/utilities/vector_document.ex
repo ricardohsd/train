@@ -11,7 +11,7 @@ defmodule Train.Utilities.VectorDocument do
 
   def parse(%{"matches" => matches}) do
     text =
-      Enum.reduce(matches, "", fn m, acc -> m["metadata"]["text"] <> acc <> "\n" end)
+      Enum.reduce(matches, "", fn m, acc -> (m["metadata"]["text"] || "") <> acc <> "\n" end)
       |> String.trim()
 
     metadata =

@@ -5,7 +5,7 @@ defmodule Train.Agents.VectorAgentTest do
   alias Train.Clients.OpenAIConfig
   alias Train.Agents.VectorPrompt
   alias Train.Agents.VectorAgent
-  alias Train.Clients.Pinecone
+  alias Train.Clients.PineconeConfig
 
   setup_all do
     HTTPoison.start()
@@ -14,14 +14,15 @@ defmodule Train.Agents.VectorAgentTest do
       Train.LlmChain.new(%{
         memory_pid: nil,
         tools: [],
-        openai_config: OpenAIConfig.new(%{model: :"gpt-3.5-turbo"}),
-        pinecone_config: %Pinecone.Config{namespace: "foo", topK: 2}
+        openai_config: OpenAIConfig.new(%{model: :"gpt-4"}),
+        pinecone_config:
+          PineconeConfig.new(%{namespace: "food", topK: 5, index: "localtest", project: "1234567"})
       })
 
     %{chain: chain}
   end
 
-  @question "o que é o divorcio?"
+  @question "Quem é Cascão Pereira Alves?"
 
   test "fetches context and metadata from Pinecone and uses OpenAI to generate a response", %{
     chain: chain
@@ -31,9 +32,9 @@ defmodule Train.Agents.VectorAgentTest do
         VectorAgent.call(chain, @question, VectorPrompt)
 
       expected =
-        "O divórcio é a dissolução legal do vínculo matrimonial entre duas pessoas, que implica na separação dos deveres de coabitação e fidelidade recíproca, bem como no fim do regime de bens. No entanto, não altera as relações entre pais e filhos, que continuam tendo direito à convivência com ambos os genitores. O procedimento judicial da separação cabe somente aos cônjuges, e, no caso de incapacidade, serão representados por um curador, ascendente ou irmão. (Fonte: Lei n. 6.515/77, art. 27 e Emenda Constitucional n. 66/2010, parágrafo único do art. 1.576 e art. 1.632 do Código Civil)"
+        "Cascão Pereira Alves, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, serving as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context"
 
-      assert response == expected
+      assert expected == response
     end
   end
 

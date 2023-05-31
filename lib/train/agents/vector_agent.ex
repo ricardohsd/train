@@ -19,8 +19,10 @@ defmodule Train.Agents.VectorAgent do
         prompt
       ) do
     with :ok <- validate!(chain),
+         {:ok, %{"database" => %{"dimension" => dimension}}} <-
+           Pinecone.index(pinecone_config.index),
          {:ok, embeddings} <- OpenAI.embedding(question, openai_config),
-         {:ok, vector} <- Pinecone.query(embeddings, pinecone_config),
+         {:ok, vector} <- Pinecone.query(Enum.take(embeddings, dimension), pinecone_config),
          document <- VectorDocument.parse(vector),
          main_prompt <- prompt.with(question, document.text, document.metadata),
          {:ok, messages, result} <- OpenAI.generate(:user, main_prompt, openai_config) do

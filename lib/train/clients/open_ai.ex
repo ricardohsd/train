@@ -68,6 +68,11 @@ defmodule Train.Clients.OpenAI do
     end
   end
 
+  def embed_long_text(text, %OpenAIConfig{api_url: api_url} = config) do
+    text = String.replace(text, "\n", " ")
+    {:ok, tokens} = ExTiktoken.CL100K.encode(text)
+  end
+
   @doc """
   Accepts a prompt string and queries OpenAI's embedding API and return the list of embeddings/
   """
