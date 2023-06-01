@@ -29,7 +29,9 @@ defmodule Train.Agents.VectorIngestion do
       end)
 
     documents_count = length(documents)
-    {:ok, ^documents_count} = Pinecone.upsert(documents, chain.pinecone_config)
+
+    {:ok, %{"upsertedCount" => ^documents_count}} =
+      Pinecone.upsert(documents, chain.pinecone_config)
   end
 
   defp parse_metadata(metadata, text) when is_map(metadata) do

@@ -28,7 +28,9 @@ defmodule Train.Clients.Pinecone do
         "namespace" => namespace
       })
 
-    post({:vectors, index, project}, "query", body, headers())
+    url({:vectors, index, project}, "query")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
   end
 
   @spec upsert(any(), PineconeConfig.t()) :: {:ok, term()} | {:error, term()}
@@ -43,46 +45,27 @@ defmodule Train.Clients.Pinecone do
       }
       |> Jason.encode!()
 
-    with {:ok, %{"upsertedCount" => upsertedCount} = resp} <-
-           post({:vectors, index, project}, "vectors/upsert", body, headers()) do
-      if is_nil(upsertedCount) do
-        {:error, resp}
-      else
-        {:ok, upsertedCount}
-      end
-    else
-      err -> err
-    end
+    url({:vectors, index, project}, "vectors/upsert")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
   end
 
   @spec indexes() :: {:ok, list(String.t())} | {:error, any()}
   def indexes() do
-    get(:indexes, "databases", headers())
+    url(:indexes, "databases")
+    |> HTTPoison.get(headers())
+    |> parse_response()
   end
 
   @spec index(String.t()) :: {:ok, map()} | {:error, any()}
   def index(index_name) do
-    get(:indexes, "databases/#{index_name}", headers())
+    url(:indexes, "databases/#{index_name}")
+    |> HTTPoison.get(headers())
+    |> parse_response()
   end
 
-  defp get(type, path, headers) do
-    case HTTPoison.get(url(type, path), headers) do
-      {:ok, %HTTPoison.Response{status_code: code, body: body}}
-      when is_integer(code) and code >= 200 and code < 300 ->
-        Jason.decode(body)
-
-      {:ok, %HTTPoison.Response{status_code: code} = resp}
-      when is_integer(code) and code >= 300 ->
-        {:error, resp}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.error("Pinecone call errored with #{reason}")
-        {:error, reason}
-    end
-  end
-
-  defp post(type, path, body, headers) do
-    case HTTPoison.post(url(type, path), body, headers) do
+  defp parse_response(response) do
+    case response do
       {:ok, %HTTPoison.Response{status_code: code, body: body}}
       when is_integer(code) and code >= 200 and code < 300 ->
         Jason.decode(body)
