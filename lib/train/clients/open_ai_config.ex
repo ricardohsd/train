@@ -1,12 +1,22 @@
 defmodule Train.Clients.OpenAIConfig do
-  defstruct api_url: nil, model: nil, retries: 5, temperature: 0.5, log_level: :debug
+  defstruct api_url: nil,
+            model: nil,
+            retries: 5,
+            temperature: 0.5,
+            log_level: :debug,
+            retry_backoff: 10000,
+            recv_timeout: 20000,
+            timeout: 20000
 
   @type t :: %__MODULE__{
           api_url: String.t(),
           model: String.t(),
           retries: integer(),
           temperature: float(),
-          log_level: atom()
+          log_level: atom(),
+          retry_backoff: integer(),
+          recv_timeout: integer(),
+          timeout: integer()
         }
 
   @type model :: :"gpt-4" | :"gpt-3.5-turbo"

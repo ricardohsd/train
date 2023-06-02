@@ -53,24 +53,19 @@ defmodule Train.Clients.OpenAI do
     {:ok, tokens} = ExTiktoken.CL100K.encode(body)
     log("-- Tokens: #{length(tokens)}", config)
 
-    options = [recv_timeout: 20000, timeout: 20000]
+    options = [recv_timeout: config.recv_timeout, timeout: config.timeout]
 
     log("-- Fetching OpenAI chat", config)
 
     case HTTPoison.post(url, body, headers(), options) do
       {:error, %HTTPoison.Error{reason: :timeout}} ->
         log("-- Retrying #{retries}", config)
-        Process.sleep(10000)
+        Process.sleep(config.retry_backoff)
         chat(messages, %OpenAIConfig{config | retries: retries - 1})
 
       other ->
         other
     end
-  end
-
-  def embed_long_text(text, %OpenAIConfig{api_url: api_url} = config) do
-    text = String.replace(text, "\n", " ")
-    {:ok, tokens} = ExTiktoken.CL100K.encode(text)
   end
 
   @doc """
