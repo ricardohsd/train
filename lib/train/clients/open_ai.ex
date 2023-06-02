@@ -123,6 +123,103 @@ defmodule Train.Clients.OpenAI do
     end
   end
 
+  @doc """
+  Queries OpenAI's completions endpoint with
+  a single or multiple messages and streams the response.
+  """
+  @spec stream(:user, String.t(), OpenAIConfig.t()) :: Enumerable.t()
+  def stream(:user, prompt, config) do
+    stream(:messages, [%{role: "user", content: prompt}], config)
+  end
+
+  @spec stream(:messages, list(message()), OpenAIConfig.t()) :: Enumerable.t()
+  def stream(
+        :messages,
+        messages,
+        %OpenAIConfig{
+          api_url: api_url,
+          model: model,
+          temperature: temperature
+        } = config
+      ) do
+    url = "#{api_url}/v1/chat/completions"
+
+    body =
+      Jason.encode!(%{
+        model: model,
+        stream: true,
+        temperature: temperature,
+        max_tokens: OpenAIConfig.get_max_tokens(model),
+        messages: messages
+      })
+
+    log("-- Fetching OpenAI Stream", config)
+
+    Stream.resource(
+      fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
+      &handle_async_response/1,
+      &close_async_response/1
+    )
+  end
+
+  defp close_async_response(resp) do
+    :hackney.stop_async(resp)
+  end
+
+  defp handle_async_response({:done, resp}) do
+    {:halt, resp}
+  end
+
+  defp handle_async_response(%HTTPoison.AsyncResponse{id: id} = resp) do
+    receive do
+      %HTTPoison.AsyncStatus{id: ^id, code: code} ->
+        Logger.debug("openai,request,status,#{inspect(code)}")
+        HTTPoison.stream_next(resp)
+        {[], resp}
+
+      %HTTPoison.AsyncHeaders{id: ^id, headers: headers} ->
+        Logger.debug("openai,request,headers,#{inspect(headers)}")
+        HTTPoison.stream_next(resp)
+        {[], resp}
+
+      %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
+        HTTPoison.stream_next(resp)
+        parse_chunk(chunk, resp)
+
+      %HTTPoison.AsyncEnd{id: ^id} ->
+        {:halt, resp}
+    end
+  end
+
+  defp parse_chunk(chunk, resp) do
+    {chunk, done?} =
+      chunk
+      |> String.split("data:")
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.reduce({"", false}, fn trimmed, {chunk, is_done?} ->
+        case Jason.decode(trimmed) do
+          {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]}} ->
+            {chunk, false}
+
+          {:ok, %{"choices" => [%{"delta" => %{"content" => text}}]}} ->
+            {chunk <> text, is_done? or false}
+
+          {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]}} ->
+            {chunk, true}
+
+          {:error, %{data: "[DONE]"}} ->
+            {chunk, is_done? or true}
+        end
+      end)
+
+    if done? do
+      {[chunk], {:done, resp}}
+    else
+      {[chunk], resp}
+    end
+  end
+
   defp headers() do
     [
       Accept: "application/json",
