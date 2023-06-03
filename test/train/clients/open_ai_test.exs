@@ -78,4 +78,21 @@ defmodule Train.Clients.OpenAITest do
       assert {:error, "timeout"} == OpenAI.embedding(@prompt, config)
     end
   end
+
+  test "embedding!", %{config: config} do
+    use_cassette "open_ai/embedding" do
+      embeddings = OpenAI.embedding!(@prompt, config)
+
+      assert length(embeddings) == 1536
+      assert List.first(embeddings) == -0.0016817485
+    end
+  end
+
+  test "embedding! raises error with invalid embeddings payload", %{config: config} do
+    use_cassette "open_ai/embedding_wrong_payload" do
+      assert_raise RuntimeError, ~r/embedding! failed:/, fn ->
+        OpenAI.embedding!(@prompt, config)
+      end
+    end
+  end
 end

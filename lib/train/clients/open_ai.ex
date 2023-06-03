@@ -69,7 +69,7 @@ defmodule Train.Clients.OpenAI do
   end
 
   @doc """
-  Accepts a prompt string and queries OpenAI's embedding API and return the list of embeddings/
+  Queries OpenAI's embedding API and return the :ok and the list of embeddings.
   """
   @spec embedding(String.t(), OpenAIConfig.t()) :: {:ok, [float()]} | {:error, String.t()}
   def embedding(prompt, %OpenAIConfig{api_url: api_url}) do
@@ -85,6 +85,17 @@ defmodule Train.Clients.OpenAI do
 
       {:error, message} ->
         {:error, message}
+    end
+  end
+
+  @doc """
+  Similar to embedding/2 but raises if there is a problem fetching the embeddings.
+  """
+  @spec embedding!(String.t(), OpenAIConfig.t()) :: [float()]
+  def embedding!(prompt, config) do
+    case embedding(prompt, config) do
+      {:ok, embeddings} -> embeddings
+      {:error, error} -> raise "embedding! failed: #{inspect(error)}"
     end
   end
 
