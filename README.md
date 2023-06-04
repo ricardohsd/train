@@ -20,7 +20,19 @@ end
 Designed to be used on conversational scenarios. It will use the given tools, and buffers the memory to remember previous conversations.
 ```elixir
 {:ok, memory_pid} = Train.Memory.BufferAgent.start_link()
-tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
+tools = [
+  %{
+    name: "Calculator",
+    description: "Calculate matematical questions, like age of a person, distance, etc",
+    func: Train.Tools.BasicCalculator
+  },
+  %{
+    name: "Google search",
+    description:
+      "Useful for when you need to answer questions about current events. You should ask targeted questions",
+    func: Train.Tools.SerpApi
+  }
+]
 chain = Train.LlmChain.new(%{memory_pid: memory_pid, tools: tools})
 
 {:ok, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")
@@ -68,6 +80,33 @@ Train.Agents.VectorIngestion.ingest(chain, text, %{about: "Langchain"}, 30)
 {:ok, _history, response} =
   Train.Agents.VectorAgent.call(chain, "Who is Cascão Pereira?", Train.Agents.VectorPrompt)
 # "Cascão Pereira, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, where he serves as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context provided"
+```
+
+## Zero Shot React Agent
+Based on Langchain's `chat-zero-shot-react-description`. Doesn't use memory, for that check the `Train.Chains.ConversationChain` agent.
+```elixir
+
+tools = [
+  %{
+    name: "Calculator",
+    description: "Calculate matematical questions, like age of a person, distance, etc",
+    func: Train.Tools.BasicCalculator
+  },
+  %{
+    name: "Google search",
+    description:
+      "Useful for when you need to answer questions about current events. You should ask targeted questions",
+    func: Train.Tools.SerpApi
+  }
+]
+chain =
+      Train.LlmChain.new(%{
+        tools: tools,
+        openai_config:
+          Train.Clients.OpenAIConfig.new(%{model: :"gpt-3.5-turbo", temperature: 0.0})
+      })
+chain |> Train.Agents.ZeroShotReact.Chat.call("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
+# 3.991298452658078
 ```
 
 ## Goals

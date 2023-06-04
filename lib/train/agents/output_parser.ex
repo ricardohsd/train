@@ -11,7 +11,7 @@ defmodule Train.Agents.OutputParser do
     cleaned =
       if String.contains?(cleaned, "```json") do
         [_ | match] = String.split(cleaned, "```json")
-        List.wrap(match) |> List.first()
+        List.wrap(match) |> List.first() |> String.trim()
       else
         cleaned
       end
@@ -19,7 +19,7 @@ defmodule Train.Agents.OutputParser do
     cleaned =
       if String.contains?(cleaned, "```") do
         [c, _] = String.split(cleaned, "```")
-        c
+        c |> String.trim()
       else
         cleaned
       end

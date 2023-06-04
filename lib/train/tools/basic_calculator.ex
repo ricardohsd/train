@@ -4,21 +4,14 @@ defmodule Train.Tools.BasicCalculator do
   Used for testing purposes.
   """
 
-  @behaviour Train.ToolSpec
-
-  @impl true
-  def name() do
-    "Calculator"
-  end
-
-  @impl true
-  def description() do
-    "Calculate matematical questions, like age of a person, distance, etc"
-  end
+  @behaviour Train.Tools.Spec
 
   @impl true
   @spec query(String.t()) :: {:error, any} | {:ok, number}
   def query(text) do
-    Abacus.eval(String.replace(text, ",", ""))
+    text
+    |> String.replace(",", "")
+    |> String.replace("**", "^")
+    |> Abacus.eval()
   end
 end

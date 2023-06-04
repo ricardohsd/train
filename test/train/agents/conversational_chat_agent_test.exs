@@ -8,7 +8,19 @@ defmodule Train.Agents.ConversationalChatAgentTest do
   setup_all do
     Logger.configure(level: :warning)
     HTTPoison.start()
-    tools = [Train.Tools.BasicCalculator, Train.Tools.SerpApi]
+
+    tools = [
+      %{
+        name: "Calculator",
+        description: "Calculate matematical questions, like age of a person, distance, etc",
+        func: Train.Tools.BasicCalculator
+      },
+      %{
+        name: "Google search",
+        description: "Used to search on Google.",
+        func: Train.Tools.SerpApi
+      }
+    ]
 
     chain =
       Train.LlmChain.new(%{

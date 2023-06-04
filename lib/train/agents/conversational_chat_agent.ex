@@ -5,7 +5,7 @@ defmodule Train.Agents.ConversationalChatAgent do
   import Train.Tools
 
   alias Train.Clients.OpenAI
-  alias Train.ToolSpec
+  alias Train.Tools
   alias Train.Agents.OutputParser
   alias Train.PromptBuilder
   alias Train.LlmChain
@@ -48,7 +48,7 @@ defmodule Train.Agents.ConversationalChatAgent do
       action = choice |> OutputParser.parse()
       log("\nIt: #{iteration}, Action: #{inspect(action)}", chain)
 
-      tool_result = run_action(action, tools)
+      {:ok, tool_result} = run_action(action, tools)
       log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
 
       # TODO: Should the LLM's action be added to the buffer?
@@ -72,7 +72,7 @@ defmodule Train.Agents.ConversationalChatAgent do
   @spec create_prompt(
           LlmChain.t(),
           String.t(),
-          list(ToolSpec.t()),
+          list(Tools.tool_wrapper()),
           list(String.t())
         ) :: list(String.t())
   def create_prompt(

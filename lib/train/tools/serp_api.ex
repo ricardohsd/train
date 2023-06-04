@@ -1,17 +1,7 @@
 defmodule Train.Tools.SerpApi do
-  @behaviour Train.ToolSpec
+  @behaviour Train.Tools.Spec
 
   require Logger
-
-  @impl true
-  def name() do
-    "Google search"
-  end
-
-  @impl true
-  def description() do
-    "Used to search on Google."
-  end
 
   @impl true
   @spec query(String.t(), number) :: {:error, any} | {:ok, String.t()}

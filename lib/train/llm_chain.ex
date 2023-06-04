@@ -1,5 +1,5 @@
 defmodule Train.LlmChain do
-  alias Train.ToolSpec
+  alias Train.Tools
   alias Train.Clients.OpenAIConfig
   alias Train.Clients.PineconeConfig
   alias Train.PromptSpec
@@ -20,7 +20,7 @@ defmodule Train.LlmChain do
           openai_config: OpenAIConfig.t(),
           pinecone_config: PineconeConfig.t(),
           log_level: atom(),
-          tools: list(ToolSpec.t()),
+          tools: list(Tools.tool_wrapper()),
           system_prompt: PromptSpec.t(),
           human_prompt: PromptSpec.t()
         }

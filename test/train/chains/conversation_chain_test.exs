@@ -5,6 +5,18 @@ defmodule Train.Chains.ConversationChainTest do
   alias Train.Chains.ConversationChain
   alias Train.Clients.OpenAIConfig
 
+  setup do
+    tools = [
+      %{
+        name: "Calculator",
+        description: "Calculate matematical questions, like age of a person, distance, etc",
+        func: Train.Tools.BasicCalculator
+      }
+    ]
+
+    %{tools: tools}
+  end
+
   test "tools must be present" do
     {:error, error} =
       %LlmChain{tools: []}
@@ -13,26 +25,26 @@ defmodule Train.Chains.ConversationChainTest do
     assert "tools can't be empty" == error
   end
 
-  test "memory agent's pid must be present" do
+  test "memory agent's pid must be present", %{tools: tools} do
     {:error, error} =
-      %LlmChain{tools: [Train.Tools.BasicCalculator], openai_config: OpenAIConfig.new()}
+      %LlmChain{tools: tools, openai_config: OpenAIConfig.new()}
       |> ConversationChain.run("What is a continent?")
 
     assert "memory agent pid can't be null" == error
   end
 
-  test "OpenAI config must be present" do
+  test "OpenAI config must be present", %{tools: tools} do
     {:error, error} =
-      %LlmChain{tools: [Train.Tools.BasicCalculator], openai_config: nil, memory_pid: self()}
+      %LlmChain{tools: tools, openai_config: nil, memory_pid: self()}
       |> ConversationChain.run("What is a continent?")
 
     assert "OpenAI config can't be null" == error
   end
 
-  test "max_iterations mus be higher than 0" do
+  test "max_iterations mus be higher than 0", %{tools: tools} do
     {:error, error} =
       %LlmChain{
-        tools: [Train.Tools.BasicCalculator],
+        tools: tools,
         openai_config: OpenAIConfig.new(),
         memory_pid: self(),
         max_iterations: 0
