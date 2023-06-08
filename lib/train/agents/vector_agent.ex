@@ -10,6 +10,7 @@ defmodule Train.Agents.VectorAgent do
   alias Train.Clients.Pinecone
   alias Train.Agents.VectorPromptSpec
   alias Train.Utilities.VectorDocument
+  alias Train.Tiktoken
 
   @spec call(LlmChain.t(), String.t(), VectorPromptSpec.t()) ::
           {:ok, String.t()} | {:error, String.t()}
@@ -37,11 +38,11 @@ defmodule Train.Agents.VectorAgent do
   end
 
   defp count_tokens(prompt, result, chain) do
-    {:ok, prompt_tokens} = ExTiktoken.CL100K.encode(prompt)
-    {:ok, result_tokens} = ExTiktoken.CL100K.encode(result)
+    prompt_tokens = Tiktoken.count_tokens(prompt)
+    result_tokens = Tiktoken.count_tokens(result)
 
     log(
-      "[VectorAgent Tokens][Prompt]#{length(prompt_tokens)},[Result]#{length(result_tokens)}",
+      "[VectorAgent Tokens][Prompt]#{prompt_tokens},[Result]#{result_tokens}",
       chain
     )
 
