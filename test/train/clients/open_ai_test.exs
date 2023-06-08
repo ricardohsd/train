@@ -36,8 +36,7 @@ defmodule Train.Clients.OpenAITest do
 
   test "chat completion timeout", %{config: config} do
     use_cassette "open_ai/chat_timeout" do
-      {:error, %HTTPoison.Error{reason: reason, id: nil}} =
-        OpenAI.generate(:user, "What are continents?", config)
+      {:error, _, reason} = OpenAI.generate(:user, "What are continents?", config)
 
       assert reason == "timeout"
     end

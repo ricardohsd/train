@@ -8,33 +8,45 @@ defmodule Train.Clients.OpenAI do
           required(:content) => String.t()
         }
 
-  @doc """
-  Queries OpenAI chat completions with the given messages.
-  Accepts gpt-4 or gpt-3.5-turbo.
-  """
   @spec generate(:user, String.t(), OpenAIConfig.t()) ::
-          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+          {:error, [binary], binary} | {:ok, any, binary}
+  @spec generate(:messages, list(message()), OpenAIConfig.t()) ::
+          {:error, [binary], binary} | {:ok, any, binary}
   def generate(:user, message, config) do
     generate(:messages, [%{role: "user", content: message}], config)
   end
 
-  @spec generate(:messages, list(message()), OpenAIConfig.t()) ::
-          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
   def generate(:messages, messages, config) do
+    completions(:messages, messages, config)
+  end
+
+  @doc """
+  Queries OpenAI chat completions with the given messages.
+  Accepts gpt-4 or gpt-3.5-turbo.
+  """
+  @spec completions(:user, String.t(), OpenAIConfig.t()) ::
+          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+  def completions(:user, message, config) do
+    completions(:messages, [%{role: "user", content: message}], config)
+  end
+
+  @spec completions(:messages, list(message()), OpenAIConfig.t()) ::
+          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+  def completions(:messages, messages, config) do
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
            chat(messages, config),
          {:ok, %{"choices" => [resp | _]}} <- Jason.decode(body),
          %{"message" => %{"role" => "assistant", "content" => content}} <- resp do
       {:ok, messages, content}
     else
-      err ->
-        err
+      {:error, %Jason.DecodeError{data: data}} -> {:error, messages, data}
+      {:error, %HTTPoison.Error{reason: "timeout", id: nil}} -> {:error, messages, "timeout"}
     end
   end
 
   # Return timeout error when retry count reaches 0
   defp chat(_, %OpenAIConfig{retries: 0}) do
-    {:error, %HTTPoison.Error{reason: :timeout, id: nil}}
+    {:error, %HTTPoison.Error{reason: "timeout", id: nil}}
   end
 
   defp chat(messages, %OpenAIConfig{api_url: api_url, retries: retries} = config) do

@@ -3,7 +3,7 @@ defmodule Train.Agents.VectorAgent do
   The VectorAgent knows how to fetch and pass context from a Vector DB to the LLM.
   It is good for generating a response based on a document stored in the db.
   """
-  require Logger
+  import Train.LevelLogger
 
   alias Train.LlmChain
   alias Train.Clients.OpenAI
@@ -18,6 +18,8 @@ defmodule Train.Agents.VectorAgent do
         question,
         prompt
       ) do
+    log("Started VectorAgent", chain)
+
     with :ok <- validate!(chain),
          {:ok, %{"database" => %{"dimension" => dimension}}} <-
            Pinecone.index(pinecone_config.index),

@@ -53,9 +53,9 @@ defmodule Train.Agents.ZeroShotReact.ChatTest do
       prompt =
         "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?"
 
-      {:ok, _, response} = chain |> Chat.call(prompt)
+      {:error, _, response} = chain |> Chat.call(prompt)
 
-      assert %HTTPoison.Error{reason: "timeout", id: nil} == response
+      assert "timeout" == response
     end
   end
 end

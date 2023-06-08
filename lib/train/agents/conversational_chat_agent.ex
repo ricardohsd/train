@@ -1,8 +1,7 @@
 defmodule Train.Agents.ConversationalChatAgent do
-  require Logger
-
   import Train.Utilities.Format
   import Train.Tools
+  import Train.LevelLogger
 
   alias Train.Clients.OpenAI
   alias Train.Tools
@@ -39,16 +38,16 @@ defmodule Train.Agents.ConversationalChatAgent do
   defp take_next_steps(
          messages,
          _,
-         %LlmChain{tools: tools, max_iterations: iteration, openai_config: openai_config} = chain
+         %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     with {:ok, messages, choice} <- OpenAI.generate(:messages, messages, openai_config) do
-      log("\nIt: #{iteration}, Messages: #{inspect(messages)}\n\n", chain)
+      log("\nIt: #{iteration}, Messages: #{inspect(messages)}", chain)
       log("\nIt: #{iteration}, Choice: #{inspect(choice)}", chain)
 
       action = choice |> OutputParser.parse()
       log("\nIt: #{iteration}, Action: #{inspect(action)}", chain)
 
-      {:ok, tool_result} = run_action(action, tools)
+      {:ok, tool_result} = run_action(action, chain)
       log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
 
       # TODO: Should the LLM's action be added to the buffer?
@@ -61,8 +60,7 @@ defmodule Train.Agents.ConversationalChatAgent do
         take_next_steps(messages, tool_result, %{chain | max_iterations: iteration - 1})
       end
     else
-      {:error, %HTTPoison.Error{reason: :timeout, id: nil}} ->
-        {:error, messages, ""}
+      {:error, _messages, err} -> {:error, messages, err}
     end
   end
 
@@ -96,9 +94,5 @@ defmodule Train.Agents.ConversationalChatAgent do
     |> format(:format_instructions, OutputParser.format_instructions())
     |> format(:tool_names, tool_names(tools))
     |> format(:tools, tool_descriptions(tools))
-  end
-
-  defp log(message, %LlmChain{log_level: log_level}) do
-    Logger.log(log_level, message)
   end
 end

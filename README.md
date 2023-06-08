@@ -60,7 +60,7 @@ chain =
   Train.Agents.VectorAgent.call(chain, "How to bake pão de queijo?", Train.Agents.VectorPrompt)
 ```
 
-## Vector ingestion
+### Vector ingestion
 Provides a way to ingest texts into the vector database (Pinecone) to be queried later.
 The texts will be encoded in tokens using [ExTiktoken](https://github.com/ricardohsd/ex_tiktoken) and splitted in chunks.
 ```elixir
@@ -82,7 +82,7 @@ Train.Agents.VectorIngestion.ingest(chain, text, %{about: "Langchain"}, 30)
 # "Cascão Pereira, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, where he serves as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context provided"
 ```
 
-## Zero Shot React Agent
+### Zero Shot React Agent
 Based on Langchain's `chat-zero-shot-react-description`. Doesn't use memory, for that check the `Train.Chains.ConversationChain` agent.
 ```elixir
 
@@ -107,6 +107,25 @@ chain =
       })
 chain |> Train.Agents.ZeroShotReact.Chat.call("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
 # 3.991298452658078
+```
+
+### Creating a tool from an agent
+Agents can be combined in a chain as specialized tools. The example below creates an agent to query a vector database using the `VectorAgent`.
+```elixir
+defmodule Search do
+  @behaviour Train.Tools.Spec
+
+  def query(text, chain) do
+    {:ok, _, response} =
+      Train.Agents.VectorAgent.call(
+        chain,
+        text,
+        Train.Agents.VectorPrompt
+      )
+
+    {:ok, response}
+  end
+end
 ```
 
 ## Goals

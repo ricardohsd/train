@@ -4,11 +4,13 @@ defmodule Train.Tools.BasicCalculator do
   Used for testing purposes.
   """
 
+  alias Train.LlmChain
+
   @behaviour Train.Tools.Spec
 
   @impl true
-  @spec query(String.t()) :: {:error, any} | {:ok, number}
-  def query(text) do
+  @spec query(String.t(), LlmChain.t()) :: {:error, any} | {:ok, number}
+  def query(text, _) do
     text
     |> String.replace(",", "")
     |> String.replace("**", "^")

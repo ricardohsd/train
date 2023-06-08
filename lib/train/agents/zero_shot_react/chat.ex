@@ -1,9 +1,8 @@
 defmodule Train.Agents.ZeroShotReact.Chat do
-  require Logger
-
   import Train.Agents.ZeroShotReact.Prompt
   import Train.Utilities.Format
   import Train.Tools
+  import Train.LevelLogger
 
   alias Train.Clients.OpenAI
   alias Train.Tools
@@ -27,7 +26,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
            take_next_steps([], "", system, question, intermediate_steps, chain) do
       {:ok, messages, response}
     else
-      {:error, messages, ""} -> {:error, messages, ""}
+      {:error, messages, err} -> {:error, messages, err}
     end
   end
 
@@ -43,7 +42,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
          system,
          question,
          intermediate_steps,
-         %LlmChain{tools: tools, max_iterations: iteration, openai_config: openai_config} = chain
+         %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     human =
       "{input}\n\n{scratchpad}"
@@ -62,7 +61,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
       {action, tool_result, intermediate_steps} =
         choice
         |> OutputParser.parse()
-        |> process_actions(intermediate_steps, nil, nil, tools)
+        |> process_actions(intermediate_steps, nil, nil, chain)
 
       log("\nIt: #{iteration}, Steps: #{inspect(intermediate_steps)}", chain)
 
@@ -83,13 +82,13 @@ defmodule Train.Agents.ZeroShotReact.Chat do
     {last_action, tool_result, intermediate_steps}
   end
 
-  def process_actions([action | tail], intermediate_steps, _last_action, _tool_result, tools) do
-    {action, tool_result, intermediate_steps} = process_action(action, intermediate_steps, tools)
-    process_actions(tail, intermediate_steps, action, tool_result, tools)
+  def process_actions([action | tail], intermediate_steps, _last_action, _tool_result, chain) do
+    {action, tool_result, intermediate_steps} = process_action(action, intermediate_steps, chain)
+    process_actions(tail, intermediate_steps, action, tool_result, chain)
   end
 
-  def process_action({thought, action}, intermediate_steps, tools) do
-    {:ok, tool_result} = run_action(action, tools)
+  def process_action({thought, action}, intermediate_steps, %LlmChain{tools: _} = chain) do
+    {:ok, tool_result} = run_action(action, chain)
 
     observation = tool_result
     intermediate_steps = [{:thought, thought} | intermediate_steps]
@@ -162,9 +161,5 @@ defmodule Train.Agents.ZeroShotReact.Chat do
   defp parse_step({:action, action}) do
     {:ok, json} = Jason.encode(action)
     "Action: ```json#{json}```"
-  end
-
-  defp log(message, %LlmChain{log_level: log_level}) do
-    Logger.log(log_level, message)
   end
 end

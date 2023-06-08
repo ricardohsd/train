@@ -1,12 +1,16 @@
 defmodule Train.Tools.SerpApi do
   @behaviour Train.Tools.Spec
 
+  alias Train.LlmChain
+
   require Logger
 
+  @retry 5
+
   @impl true
-  @spec query(String.t(), number) :: {:error, any} | {:ok, String.t()}
-  def query(query, retry \\ 5) do
-    with {:ok, data} <- call(query, retry) do
+  @spec query(String.t(), LlmChain.t()) :: {:error, any} | {:ok, String.t()}
+  def query(query, _) do
+    with {:ok, data} <- call(query, @retry) do
       parse(data)
     else
       {:error, %Jason.DecodeError{}} ->

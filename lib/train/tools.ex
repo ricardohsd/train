@@ -1,12 +1,14 @@
 defmodule Train.Tools do
+  alias Train.LlmChain
+
   @type tool_wrapper :: %{
           required(:name) => String.t(),
           required(:description) => String.t(),
           required(:func) => Train.Tools.Spec.t()
         }
 
-  @spec run_action(map(), list(tool_wrapper())) :: {:error, any()} | {:ok, String.t()}
-  def run_action(action, tools) do
+  @spec run_action(map(), LlmChain.t()) :: {:error, any()} | {:ok, String.t()}
+  def run_action(action, %LlmChain{tools: tools} = chain) do
     tool =
       Enum.find(tools, fn t ->
         t.name() == action["action"]
@@ -15,13 +17,14 @@ defmodule Train.Tools do
     if action["action"] == "Final Answer" do
       {:ok, action["action_input"]}
     else
-      run_tool(tool, action["action_input"])
+      run_tool(tool, action["action_input"], chain)
     end
   end
 
-  @spec run_tool(tool_wrapper(), String.t()) :: {:error, String.t()} | {:ok, String.t()}
-  def run_tool(%{name: name, func: tool}, input) do
-    case tool.query(input) do
+  @spec run_tool(tool_wrapper(), String.t(), LlmChain.t()) ::
+          {:error, String.t()} | {:ok, String.t()}
+  def run_tool(%{name: name, func: tool}, input, chain) do
+    case tool.query(input, chain) do
       {:ok, res} -> {:ok, res}
       {:error, err} -> {:error, "failed to run #{name} with #{err}"}
     end
