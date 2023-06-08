@@ -16,8 +16,14 @@ defmodule Train.Clients.OpenAI do
     generate(:messages, [%{role: "user", content: message}], config)
   end
 
-  def generate(:messages, messages, config) do
+  def generate(:messages, messages, %OpenAIConfig{stream: false} = config) do
     completions(:messages, messages, config)
+  end
+
+  def generate(:messages, messages, %OpenAIConfig{stream: true} = config) do
+    {:ok, messages, stream} = stream(:messages, messages, config)
+
+    {:ok, messages, stream |> Enum.join("")}
   end
 
   @doc """
@@ -139,11 +145,6 @@ defmodule Train.Clients.OpenAI do
   Queries OpenAI's completions endpoint with
   a single or multiple messages and streams the response.
   """
-  @spec stream(:user, String.t(), OpenAIConfig.t()) :: Enumerable.t()
-  def stream(:user, prompt, config) do
-    stream(:messages, [%{role: "user", content: prompt}], config)
-  end
-
   @spec stream(:messages, list(message()), OpenAIConfig.t()) :: Enumerable.t()
   def stream(
         :messages,
@@ -167,11 +168,15 @@ defmodule Train.Clients.OpenAI do
 
     log("-- Fetching OpenAI Stream", config)
 
-    Stream.resource(
-      fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
-      &handle_async_response/1,
-      &close_async_response/1
-    )
+    {
+      :ok,
+      messages,
+      Stream.resource(
+        fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
+        &handle_async_response/1,
+        &close_async_response/1
+      )
+    }
   end
 
   defp close_async_response(resp) do

@@ -6,7 +6,8 @@ defmodule Train.Clients.OpenAIConfig do
             log_level: :debug,
             retry_backoff: 10000,
             recv_timeout: 20000,
-            timeout: 20000
+            timeout: 20000,
+            stream: false
 
   @type t :: %__MODULE__{
           api_url: String.t(),
@@ -16,7 +17,8 @@ defmodule Train.Clients.OpenAIConfig do
           log_level: atom(),
           retry_backoff: integer(),
           recv_timeout: integer(),
-          timeout: integer()
+          timeout: integer(),
+          stream: boolean()
         }
 
   @type model :: :"gpt-4" | :"gpt-3.5-turbo"
