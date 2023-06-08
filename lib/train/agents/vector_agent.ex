@@ -28,11 +28,19 @@ defmodule Train.Agents.VectorAgent do
          document <- VectorDocument.parse(vector),
          main_prompt <- prompt.with(question, document.text, document.metadata),
          {:ok, messages, result} <- OpenAI.generate(:user, main_prompt, openai_config) do
+      count_tokens(main_prompt, result, chain)
       {:ok, messages, result}
     else
       {:error, :timeout} -> {:error, "timeout"}
       err -> err
     end
+  end
+
+  defp count_tokens(prompt, result, chain) do
+    {:ok, prompt_tokens} = ExTiktoken.CL100K.encode(prompt)
+    {:ok, result_tokens} = ExTiktoken.CL100K.encode(result)
+    log("[VectorAgent Tokens][Prompt]#{length(prompt_tokens)},[Result]#{length(result_tokens)}", chain)
+    :ok
   end
 
   defp validate!(%LlmChain{
