@@ -15,8 +15,8 @@ defmodule Train.Agents.ConversationalChatAgent do
 
   A previous conversation can be passed as the 3rd parameter (messages).
   """
-  @spec call(LlmChain.t(), String.t(), String.t()) ::
-          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+  @spec call(LlmChain.t(), String.t(), list(String.t())) ::
+          {:error, list(OpenAI.message()), String.t()} | {:ok, list(OpenAI.message()), String.t()}
   def call(%LlmChain{tools: tools} = chain, question, chat_history \\ []) do
     prompt = create_prompt(chain, question, tools, chat_history) |> PromptBuilder.build()
 
@@ -27,7 +27,7 @@ defmodule Train.Agents.ConversationalChatAgent do
     with {messages, response} <- take_next_steps(messages, "", chain) do
       {:ok, messages, response}
     else
-      {:error, messages, ""} -> {:error, messages, ""}
+      err -> err
     end
   end
 
