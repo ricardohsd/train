@@ -24,20 +24,22 @@ defmodule Train.Agents.ConversationalChatAgent do
       %{role: "system", content: prompt}
     ]
 
-    with {messages, response} <- take_next_steps(messages, "", chain) do
+    with {messages, response} <- take_next_steps(messages, "", question, chain) do
+      messages = messages |> Enum.reverse()
       {:ok, messages, response}
     else
       err -> err
     end
   end
 
-  defp take_next_steps(messages, tool_result, %LlmChain{max_iterations: 0}) do
+  defp take_next_steps(messages, tool_result, _, %LlmChain{max_iterations: 0}) do
     {messages, tool_result}
   end
 
   defp take_next_steps(
          messages,
          _,
+         question,
          %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     with {:ok, messages, choice} <- OpenAI.generate(:messages, messages, openai_config) do
@@ -50,17 +52,36 @@ defmodule Train.Agents.ConversationalChatAgent do
       {:ok, tool_result} = run_action(action, chain)
       log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
 
-      # TODO: Should the LLM's action be added to the buffer?
-      # messages = Enum.concat(messages, [%{role: "assistant", content: choice}])
-      messages = Enum.concat(messages, [%{role: "assistant", content: "#{tool_result}"}])
+      messages =
+        prepend(
+          messages,
+          %{role: "user", content: question},
+          %{role: "assistant", content: "#{tool_result}"}
+        )
 
       if action["action"] == "Final Answer" do
         {messages, tool_result}
       else
-        take_next_steps(messages, tool_result, %{chain | max_iterations: iteration - 1})
+        take_next_steps(messages, tool_result, question, %{chain | max_iterations: iteration - 1})
       end
     else
       {:error, _messages, err} -> {:error, messages, err}
+    end
+  end
+
+  # The agent can step multiple times with the same question and give the same output
+  # in that case the messages shouldn't be duplicated.
+  defp prepend(messages, user, assistant) do
+    # Revert to be able to ignore the system prompt
+    [%{content: _, role: "system"} | tail] = messages |> Enum.reverse()
+
+    chunks = tail |> Enum.chunk_every(2)
+    has_messages = Enum.any?(chunks, fn [u, a] -> u == user && a == assistant end)
+
+    if has_messages do
+      messages
+    else
+      [assistant | [user | messages]]
     end
   end
 

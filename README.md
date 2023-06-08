@@ -33,7 +33,7 @@ tools = [
     func: Train.Tools.SerpApi
   }
 ]
-chain = Train.LlmChain.new(%{memory_pid: memory_pid, tools: tools})
+chain = Train.LlmChain.new(%{memory: {memory_pid, Train.Memory.BufferAgent}, tools: tools})
 
 {:ok, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")
 # Angela Dorothea Merkel is a German former politician and scientist who served as Chancellor of Germany from November 2005 to December 2021. A member of the Christian Democratic Union, she previously served as Leader of the Opposition from 2002 to 2005 and as Leader of the Christian Democratic Union from 2000 to 2018.

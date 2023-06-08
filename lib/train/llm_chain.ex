@@ -3,10 +3,11 @@ defmodule Train.LlmChain do
   alias Train.Clients.OpenAIConfig
   alias Train.Clients.PineconeConfig
   alias Train.PromptSpec
+  alias Train.Memory.MemorySpec
   alias Train.Agents.ConversationalChatPrompts
 
   defstruct max_iterations: 5,
-            memory_pid: nil,
+            memory: nil,
             openai_config: OpenAIConfig.new(),
             pinecone_config: PineconeConfig.new(),
             log_level: :info,
@@ -16,7 +17,7 @@ defmodule Train.LlmChain do
 
   @type t :: %__MODULE__{
           max_iterations: integer(),
-          memory_pid: pid(),
+          memory: {pid(), MemorySpec.t()},
           openai_config: OpenAIConfig.t(),
           pinecone_config: PineconeConfig.t(),
           log_level: atom(),

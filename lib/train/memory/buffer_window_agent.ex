@@ -3,6 +3,8 @@ defmodule Train.Memory.BufferWindowAgent do
   Buffers the last X messages to be retrieved in the next call to the LLM.
   """
 
+  @behaviour Train.Memory.MemorySpec
+
   use Agent
 
   alias Train.Memory.Buffer
@@ -11,16 +13,19 @@ defmodule Train.Memory.BufferWindowAgent do
     Agent.start_link(fn -> {initial_value, window_size} end)
   end
 
+  @impl true
   @spec get(pid()) :: list(String.t())
   def get(pid) do
     Agent.get(pid, fn {val, _window} -> Buffer.buffer_history(Enum.reverse(val)) end)
   end
 
+  @impl true
   @spec clear(pid()) :: :ok
   def clear(pid) do
     Agent.update(pid, fn {_, window} -> {[], window} end)
   end
 
+  @impl true
   @spec put(pid(), String.t()) :: :ok
   def put(pid, message) do
     Agent.update(pid, fn {val, window} ->

@@ -12,7 +12,7 @@ defmodule Train.Agents.VectorAgentTest do
 
     chain =
       Train.LlmChain.new(%{
-        memory_pid: nil,
+        memory: nil,
         tools: [],
         openai_config: OpenAIConfig.new(%{model: :"gpt-4"}),
         pinecone_config:

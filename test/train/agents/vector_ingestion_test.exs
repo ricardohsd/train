@@ -11,7 +11,7 @@ defmodule Train.Clients.VectorIngestionTest do
 
     chain =
       Train.LlmChain.new(%{
-        memory_pid: nil,
+        memory: nil,
         tools: [],
         openai_config: OpenAIConfig.new(%{model: :"gpt-3.5-turbo"}),
         pinecone_config:

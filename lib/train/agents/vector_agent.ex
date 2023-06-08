@@ -39,7 +39,12 @@ defmodule Train.Agents.VectorAgent do
   defp count_tokens(prompt, result, chain) do
     {:ok, prompt_tokens} = ExTiktoken.CL100K.encode(prompt)
     {:ok, result_tokens} = ExTiktoken.CL100K.encode(result)
-    log("[VectorAgent Tokens][Prompt]#{length(prompt_tokens)},[Result]#{length(result_tokens)}", chain)
+
+    log(
+      "[VectorAgent Tokens][Prompt]#{length(prompt_tokens)},[Result]#{length(result_tokens)}",
+      chain
+    )
+
     :ok
   end
 

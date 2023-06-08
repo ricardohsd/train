@@ -3,6 +3,8 @@ defmodule Train.Memory.BufferAgent do
   Stores the agent memory to be retrieved in the next call.
   """
 
+  @behaviour Train.Memory.MemorySpec
+
   use Agent
 
   alias Train.Memory.Buffer
@@ -11,16 +13,19 @@ defmodule Train.Memory.BufferAgent do
     Agent.start_link(fn -> initial_value end)
   end
 
+  @impl true
   @spec get(pid()) :: list(String.t())
   def get(pid) do
     Agent.get(pid, &Buffer.buffer_history(Enum.reverse(&1)))
   end
 
+  @impl true
   @spec clear(pid()) :: :ok
   def clear(pid) do
     Agent.update(pid, fn _ -> [] end)
   end
 
+  @impl true
   @spec put(pid(), String.t()) :: :ok
   def put(pid, message) do
     Agent.update(pid, &Enum.dedup([message | &1]))
