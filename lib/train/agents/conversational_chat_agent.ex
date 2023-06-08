@@ -6,7 +6,7 @@ defmodule Train.Agents.ConversationalChatAgent do
   alias Train.Clients.OpenAI
   alias Train.Tools
   alias Train.Agents.OutputParser
-  alias Train.PromptBuilder
+  alias Train.PromptTemplate
   alias Train.LlmChain
 
   @doc """
@@ -18,7 +18,7 @@ defmodule Train.Agents.ConversationalChatAgent do
   @spec call(LlmChain.t(), String.t(), list(String.t())) ::
           {:error, list(OpenAI.message()), String.t()} | {:ok, list(OpenAI.message()), String.t()}
   def call(%LlmChain{tools: tools} = chain, question, chat_history \\ []) do
-    prompt = create_prompt(chain, question, tools, chat_history) |> PromptBuilder.build()
+    prompt = create_prompt(chain, question, tools, chat_history)
 
     messages = [
       %{role: "system", content: prompt}
@@ -93,7 +93,7 @@ defmodule Train.Agents.ConversationalChatAgent do
           String.t(),
           list(Tools.tool_wrapper()),
           list(String.t())
-        ) :: list(String.t())
+        ) :: String.t()
   def create_prompt(
         %LlmChain{system_prompt: system_prompt, human_prompt: human_prompt},
         input,
@@ -107,7 +107,7 @@ defmodule Train.Agents.ConversationalChatAgent do
       {:system, system_prompt.to_s()},
       {:chat_history, history},
       {:human, final_prompt}
-    ]
+    ] |> PromptTemplate.build()
   end
 
   defp human_prompt(prompt, tools) do

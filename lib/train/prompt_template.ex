@@ -1,4 +1,4 @@
-defmodule Train.PromptBuilder do
+defmodule Train.PromptTemplate do
   @doc """
   Builds a chat's system promp by joining the system, human, and AI prompts.
   """

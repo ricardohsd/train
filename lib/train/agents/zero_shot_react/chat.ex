@@ -7,7 +7,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
   alias Train.Clients.OpenAI
   alias Train.Tools
   alias Train.Agents.ZeroShotReact.OutputParser
-  alias Train.PromptBuilder
+  alias Train.PromptTemplate
   alias Train.LlmChain
 
   @doc """
@@ -19,7 +19,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
   @spec call(LlmChain.t(), String.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
   def call(%LlmChain{tools: tools} = chain, question) do
-    system = system_prompt(tools) |> PromptBuilder.build()
+    system = system_prompt(tools)
     intermediate_steps = []
 
     with {messages, response} <-
@@ -101,7 +101,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
   @doc """
   Creates the system prompt for the agent.
   """
-  @spec system_prompt(list(Tools.tool_wrapper())) :: list({atom(), String.t()})
+  @spec system_prompt(list(Tools.tool_wrapper())) :: String.t()
   def system_prompt(tools) do
     system =
       [
@@ -115,7 +115,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
 
     [
       {:system, system}
-    ]
+    ] |> PromptTemplate.build()
   end
 
   @doc """
