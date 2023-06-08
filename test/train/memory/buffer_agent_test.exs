@@ -4,19 +4,22 @@ defmodule Train.Memory.BufferAgentTest do
   alias Train.Memory.BufferAgent
 
   test "dedups messages" do
-    {:ok, pid} = BufferAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferAgent.start_link()
 
-    BufferAgent.put(pid, %{role: "user", content: "abc"})
-    BufferAgent.put(pid, %{role: "user", content: "xyz"})
-    BufferAgent.put(pid, %{role: "user", content: "abc"})
+    BufferAgent.put(pid, %{role: "system", content: "the system prompt"})
+    BufferAgent.put(pid, %{content: "In which city was she born?", role: "user"})
+    BufferAgent.put(pid, %{content: "In which city was she born?", role: "user"})
+    BufferAgent.put(pid, %{content: "Hamburg, Germany", role: "assistant"})
+    BufferAgent.put(pid, %{content: "Hamburg, Germany", role: "assistant"})
 
-    assert ["Human: abc", "Human: xyz", "Human: abc"] == BufferAgent.get(pid)
+    assert ["Human: In which city was she born?", "AI: Hamburg, Germany"] == BufferAgent.get(pid)
   end
 
   test "puts many messages" do
-    {:ok, pid} = BufferAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferAgent.start_link()
 
     BufferAgent.put_many(pid, [
+      %{role: "user", content: "abc"},
       %{role: "user", content: "abc"},
       %{role: "user", content: "xyz"},
       %{role: "user", content: "abc"}
@@ -26,9 +29,10 @@ defmodule Train.Memory.BufferAgentTest do
   end
 
   test "filters out system messages" do
-    {:ok, pid} = BufferAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferAgent.start_link()
 
     BufferAgent.put_many(pid, [
+      %{role: "user", content: "abc"},
       %{role: "user", content: "abc"},
       %{role: "assistant", content: "xyz"},
       %{role: "system", content: "123"}
@@ -38,7 +42,9 @@ defmodule Train.Memory.BufferAgentTest do
   end
 
   test "clears the agent state" do
-    {:ok, pid} = BufferAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferAgent.start_link()
+
+    BufferAgent.put(pid, %{role: "user", content: "abc"})
 
     BufferAgent.clear(pid)
 

@@ -9,8 +9,8 @@ defmodule Train.Memory.BufferAgent do
 
   alias Train.Memory.Buffer
 
-  def start_link(initial_value \\ []) do
-    Agent.start_link(fn -> initial_value end)
+  def start_link() do
+    Agent.start_link(fn -> [] end)
   end
 
   @impl true

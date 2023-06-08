@@ -9,8 +9,8 @@ defmodule Train.Memory.BufferWindowAgent do
 
   alias Train.Memory.Buffer
 
-  def start_link(initial_value \\ [], window_size \\ 2) do
-    Agent.start_link(fn -> {initial_value, window_size} end)
+  def start_link(window_size \\ 2) do
+    Agent.start_link(fn -> {[], window_size} end)
   end
 
   @impl true

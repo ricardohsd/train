@@ -4,8 +4,9 @@ defmodule Train.Memory.BufferWindowAgentTest do
   alias Train.Memory.BufferWindowAgent
 
   test "dedups messages" do
-    {:ok, pid} = BufferWindowAgent.start_link([%{role: "user", content: "abc"}], 2)
+    {:ok, pid} = BufferWindowAgent.start_link(2)
 
+    BufferWindowAgent.put(pid, %{role: "user", content: "abc"})
     BufferWindowAgent.put(pid, %{role: "user", content: "abc"})
     BufferWindowAgent.put(pid, %{role: "user", content: "xyz"})
     BufferWindowAgent.put(pid, %{role: "user", content: "abc"})
@@ -14,11 +15,9 @@ defmodule Train.Memory.BufferWindowAgentTest do
   end
 
   test "keeps a window of 2 messages" do
-    {:ok, pid} =
-      BufferWindowAgent.start_link(
-        [%{role: "user", content: "My goal is to relax at the beach."}],
-        2
-      )
+    {:ok, pid} = BufferWindowAgent.start_link(2)
+
+    BufferWindowAgent.put(pid, %{role: "user", content: "My goal is to relax at the beach."})
 
     BufferWindowAgent.put_many(pid, [
       %{role: "assistant", content: "Ok. Your goal is to relax at the beach."},
@@ -33,9 +32,10 @@ defmodule Train.Memory.BufferWindowAgentTest do
   end
 
   test "filters out system messages" do
-    {:ok, pid} = BufferWindowAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferWindowAgent.start_link()
 
     BufferWindowAgent.put_many(pid, [
+      %{role: "user", content: "abc"},
       %{role: "user", content: "123"},
       %{role: "user", content: "cde"},
       %{role: "user", content: "abc"},
@@ -48,7 +48,9 @@ defmodule Train.Memory.BufferWindowAgentTest do
   end
 
   test "clears the agent state" do
-    {:ok, pid} = BufferWindowAgent.start_link([%{role: "user", content: "abc"}])
+    {:ok, pid} = BufferWindowAgent.start_link()
+
+    BufferWindowAgent.put(pid, %{role: "user", content: "abc"})
 
     BufferWindowAgent.clear(pid)
 
