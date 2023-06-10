@@ -25,7 +25,6 @@ defmodule Train.Agents.ConversationalChatAgent do
     ]
 
     with {messages, response} <- take_next_steps(messages, "", question, chain) do
-      messages = messages |> Enum.reverse()
       {:ok, messages, response}
     else
       err -> err
@@ -53,7 +52,7 @@ defmodule Train.Agents.ConversationalChatAgent do
       log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
 
       messages =
-        prepend(
+        append(
           messages,
           %{role: "user", content: question},
           %{role: "assistant", content: "#{tool_result}"}
@@ -71,9 +70,8 @@ defmodule Train.Agents.ConversationalChatAgent do
 
   # The agent can step multiple times with the same question and give the same output
   # in that case the messages shouldn't be duplicated.
-  defp prepend(messages, user, assistant) do
-    # Revert to be able to ignore the system prompt
-    [%{content: _, role: "system"} | tail] = messages |> Enum.reverse()
+  defp append(messages, user, assistant) do
+    [%{content: _, role: "system"} | tail] = messages
 
     chunks = tail |> Enum.chunk_every(2)
     has_messages = Enum.any?(chunks, fn [u, a] -> u == user && a == assistant end)
@@ -81,7 +79,10 @@ defmodule Train.Agents.ConversationalChatAgent do
     if has_messages do
       messages
     else
-      [assistant | [user | messages]]
+      # According to https://hexdocs.pm/elixir/1.12/Kernel.html#++/2
+      # it's preferable reversing and prepending, than concatenating two lists.
+      messages = messages |> Enum.reverse()
+      [assistant | [user | messages]] |> Enum.reverse()
     end
   end
 
