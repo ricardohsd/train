@@ -25,7 +25,7 @@ defmodule Train.Agents.ZeroShotReact.OutputParser do
     actions = actions |> Enum.join("") |> String.trim()
 
     actions
-    |> Train.Agents.OutputParser.parse()
+    |> Train.Agents.Conversational.OutputParser.parse()
     |> List.wrap()
     |> Enum.map(fn action ->
       {

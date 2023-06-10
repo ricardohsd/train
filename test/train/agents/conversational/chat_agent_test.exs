@@ -1,8 +1,8 @@
-defmodule Train.Agents.ConversationalChatAgentTest do
+defmodule Train.Agents.Conversational.ChatAgentTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Train.Agents.ConversationalChatAgent
+  alias Train.Agents.Conversational.ChatAgent
   alias Train.Clients.OpenAIConfig
 
   setup_all do
@@ -35,7 +35,7 @@ defmodule Train.Agents.ConversationalChatAgentTest do
   test "uses the search tool to get more context", %{chain: chain} do
     use_cassette "agents/conversational" do
       {:ok, _, response} =
-        ConversationalChatAgent.call(
+        ChatAgent.call(
           chain,
           "Who is the creator of Elixir?",
           []
@@ -52,7 +52,7 @@ defmodule Train.Agents.ConversationalChatAgentTest do
       ]
 
       {:ok, [%{content: _, role: "system"} | messages], response} =
-        ConversationalChatAgent.call(
+        ChatAgent.call(
           chain,
           "In which city was she born?",
           chat_history

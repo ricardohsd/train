@@ -1,7 +1,7 @@
 defmodule Train.Chains.ConversationChain do
   require Logger
 
-  alias Train.Agents.ConversationalChatAgent
+  alias Train.Agents.Conversational.ChatAgent
   alias Train.LlmChain
 
   @doc """
@@ -36,7 +36,7 @@ defmodule Train.Chains.ConversationChain do
     with :ok <- validate_chain(chain),
          chat_history <- memory.get(memory_pid),
          {:ok, messages, response} <-
-           ConversationalChatAgent.call(
+           ChatAgent.call(
              chain,
              question,
              chat_history

@@ -1,4 +1,4 @@
-defmodule Train.Agents.ConversationalChatPrompts do
+defmodule Train.Agents.Conversational.Prompts do
   defmodule SystemPrompt do
     @behaviour Train.Agents.PromptSpec
 

@@ -12,7 +12,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
 
   @doc """
   This agents follows the ReAct model to determine which tool can be used.
-  It doesn't use previous conversations, for that please check the ConversationalChatAgent.
+  It doesn't use previous conversations, for that please check the Conversational.ChatAgent.
 
   It returns :ok, the list of messages used in the OpenAI's api, and the response.
   """
@@ -115,7 +115,8 @@ defmodule Train.Agents.ZeroShotReact.Chat do
 
     [
       {:system, system}
-    ] |> PromptTemplate.build()
+    ]
+    |> PromptTemplate.build()
   end
 
   @doc """

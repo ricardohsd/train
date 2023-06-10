@@ -1,7 +1,7 @@
-defmodule Train.Agents.OutputParserTest do
+defmodule Train.Agents.Conversational.OutputParserTest do
   use ExUnit.Case, async: true
 
-  alias Train.Agents.OutputParser
+  alias Train.Agents.Conversational.OutputParser
 
   test "parse json markdown" do
     thought =

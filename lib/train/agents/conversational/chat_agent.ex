@@ -1,11 +1,11 @@
-defmodule Train.Agents.ConversationalChatAgent do
+defmodule Train.Agents.Conversational.ChatAgent do
   import Train.Utilities.Format
   import Train.Tools
   import Train.LevelLogger
 
   alias Train.Clients.OpenAI
   alias Train.Tools
-  alias Train.Agents.OutputParser
+  alias Train.Agents.Conversational.OutputParser
   alias Train.PromptTemplate
   alias Train.LlmChain
 
@@ -108,7 +108,8 @@ defmodule Train.Agents.ConversationalChatAgent do
       {:system, system_prompt.to_s()},
       {:chat_history, history},
       {:human, final_prompt}
-    ] |> PromptTemplate.build()
+    ]
+    |> PromptTemplate.build()
   end
 
   defp human_prompt(prompt, tools) do

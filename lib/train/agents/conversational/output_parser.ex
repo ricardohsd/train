@@ -1,4 +1,4 @@
-defmodule Train.Agents.OutputParser do
+defmodule Train.Agents.Conversational.OutputParser do
   def parse(texts) when is_list(texts) do
     Enum.map(texts, fn text ->
       parse(text)

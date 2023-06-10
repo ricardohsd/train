@@ -4,7 +4,7 @@ defmodule Train.LlmChain do
   alias Train.Clients.PineconeConfig
   alias Train.PromptSpec
   alias Train.Memory.MemorySpec
-  alias Train.Agents.ConversationalChatPrompts
+  alias Train.Agents.Conversational.Prompts
 
   defstruct max_iterations: 5,
             memory: nil,
@@ -12,8 +12,8 @@ defmodule Train.LlmChain do
             pinecone_config: PineconeConfig.new(),
             log_level: :info,
             tools: [],
-            system_prompt: ConversationalChatPrompts.SystemPrompt,
-            human_prompt: ConversationalChatPrompts.HumanPrompt
+            system_prompt: Prompts.SystemPrompt,
+            human_prompt: Prompts.HumanPrompt
 
   @type t :: %__MODULE__{
           max_iterations: integer(),
