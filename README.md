@@ -131,5 +131,4 @@ end
 ## Goals
 - [] Implement other types of memory buffer like window and summary explained on this [post](https://www.pinecone.io/learn/langchain-conversational-memory/).
 - [] Create other tools like: Wikipedia, Wolfram, PostgreSQL/MySQL.
-- [] Implement a Zero Shot React agent.
 - [] Implement a buffer memory backed by a SQL storage.
