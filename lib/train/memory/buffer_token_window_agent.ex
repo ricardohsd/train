@@ -9,6 +9,13 @@ defmodule Train.Memory.BufferTokenWindowAgent do
 
   alias Train.Memory.Buffer
 
+  @doc """
+  Starts the memory agent with a given name. Useful when using it with a DynamicSupervisor.
+  """
+  def start_link(name, max_tokens) do
+    Agent.start_link(fn -> {[], max_tokens} end, name: name)
+  end
+
   def start_link(max_tokens \\ 500) do
     Agent.start_link(fn -> {[], max_tokens} end)
   end
