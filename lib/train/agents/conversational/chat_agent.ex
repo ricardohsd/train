@@ -1,7 +1,7 @@
 defmodule Train.Agents.Conversational.ChatAgent do
-  import Train.Tools
   import Train.LevelLogger
 
+  alias Train.Tools
   alias Train.Clients.OpenAI
   alias Train.Agents.Conversational.OutputParser
   alias Train.LlmChain
@@ -9,9 +9,9 @@ defmodule Train.Agents.Conversational.ChatAgent do
 
   @doc """
   Calls the agent with the given question and tools.
-  It returns :ok, the list of messages used in the OpenAI's api, and the response.
+  It returns :ok, the list of intermediate messages used in the OpenAI's api, and the response.
 
-  A previous conversation can be passed as the 3rd parameter (messages).
+  A previous conversation can be passed as the 3rd parameter (chat_history).
   """
   @spec call(LlmChain.t(), String.t(), list(String.t())) ::
           {:error, list(OpenAI.message()), String.t()} | {:ok, list(OpenAI.message()), String.t()}
@@ -45,17 +45,17 @@ defmodule Train.Agents.Conversational.ChatAgent do
          %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     with messages <- PromptBuilder.build(chain, question, chat_history, intermediate_steps),
-         {:ok, _, choice} <- OpenAI.generate(:messages, messages, openai_config) do
+         {:ok, _, raw_resp} <- OpenAI.generate(:messages, messages, openai_config) do
       log("\nIt: #{iteration}, Messages: #{inspect(messages)}", chain)
-      log("\nIt: #{iteration}, LLM response: #{inspect(choice)}", chain)
+      log("\nIt: #{iteration}, LLM response: #{inspect(raw_resp)}", chain)
 
-      action = choice |> OutputParser.parse()
+      action = raw_resp |> OutputParser.parse()
       log("\nIt: #{iteration}, Parsed action: #{inspect(action)}", chain)
 
-      {:ok, tool_result} = run_action(action, chain)
+      {:ok, tool_result} = Tools.run_action(action, chain)
       log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
 
-      intermediate_steps = {choice, tool_result}
+      intermediate_steps = {raw_resp, tool_result}
 
       if action["action"] == "Final Answer" do
         {intermediate_steps, tool_result}

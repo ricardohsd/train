@@ -8,20 +8,18 @@ defmodule Train.Agents.Conversational.PromptBuilder do
   def build(
         %LlmChain{
           tools: tools,
-          system_prompt: system_prompt,
-          human_prompt: human_prompt,
-          tool_response_prompt: tool_response_prompt
+          prompt_template: prompt_template
         },
         question,
         chat_history,
         intermediate_steps
       ) do
-    human = human_prompt(human_prompt.to_s(), question, tools)
+    human = human_prompt(prompt_template.for(:human), question, tools)
 
-    messages = [%{role: "system", content: system_prompt.to_s()}]
+    messages = [%{role: "system", content: prompt_template.for(:system)}]
     messages = Enum.concat(chat_history |> Enum.reverse(), messages)
     messages = [%{role: "user", content: human} | messages]
-    messages = Enum.concat(scratchpad(intermediate_steps, tool_response_prompt), messages)
+    messages = Enum.concat(scratchpad(intermediate_steps, prompt_template), messages)
     messages = messages |> Enum.reverse()
     messages
   end
@@ -38,8 +36,8 @@ defmodule Train.Agents.Conversational.PromptBuilder do
     []
   end
 
-  defp scratchpad({action, observation}, tool_response_prompt) do
-    user = tool_response_prompt.to_s() |> format(:observation, "#{observation}")
+  defp scratchpad({action, observation}, prompt_template) do
+    user = prompt_template.for(:scratchpad) |> format(:observation, "#{observation}")
 
     [
       %{role: "user", content: user},

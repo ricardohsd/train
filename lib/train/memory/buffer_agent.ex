@@ -7,8 +7,6 @@ defmodule Train.Memory.BufferAgent do
 
   use Agent
 
-  alias Train.Memory.Buffer
-
   @doc """
   Starts the memory agent with a given name. Useful when using it with a DynamicSupervisor.
   """

@@ -2,7 +2,7 @@ defmodule Train.Agents.PromptSpec do
   @type t :: module()
 
   @doc """
-  Returns the raw prompt template.
+  Returns the raw prompt template for the given context.
   """
-  @callback to_s() :: String.t()
+  @callback for(atom()) :: String.t()
 end
