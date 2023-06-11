@@ -23,7 +23,7 @@ defmodule Train.Memory.BufferWindowAgent do
   @impl true
   @spec get(pid()) :: list(String.t())
   def get(pid) do
-    Agent.get(pid, fn {val, _window} -> Buffer.buffer_history(Enum.reverse(val)) end)
+    Agent.get(pid, fn {val, _window} -> Enum.reverse(val) end)
   end
 
   @impl true

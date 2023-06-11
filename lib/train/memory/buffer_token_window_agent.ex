@@ -58,7 +58,6 @@ defmodule Train.Memory.BufferTokenWindowAgent do
       messages
       |> filter()
       |> Enum.reverse()
-      |> Buffer.buffer_history()
       |> Enum.concat(buffer)
       |> Enum.dedup()
 
@@ -67,7 +66,7 @@ defmodule Train.Memory.BufferTokenWindowAgent do
 
   defp take_while_max_tokens(messages, max_tokens) do
     fun = fn entry, acc ->
-      text = [entry | acc] |> Enum.join("\n")
+      text = [entry | acc] |> Buffer.buffer_history() |> Enum.join("\n")
       {:ok, tokens} = ExTiktoken.CL100K.encode(text)
       length(tokens) < max_tokens
     end

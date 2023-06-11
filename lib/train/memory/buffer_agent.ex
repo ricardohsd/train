@@ -23,7 +23,7 @@ defmodule Train.Memory.BufferAgent do
   @impl true
   @spec get(pid()) :: list(String.t())
   def get(pid) do
-    Agent.get(pid, &Buffer.buffer_history(Enum.reverse(&1)))
+    Agent.get(pid, &Enum.reverse(&1))
   end
 
   @impl true
@@ -35,7 +35,7 @@ defmodule Train.Memory.BufferAgent do
   @impl true
   @spec put(pid(), String.t()) :: :ok
   def put(pid, message) do
-    Agent.update(pid, &Enum.dedup([message | &1]))
+    __MODULE__.put_many(pid, [message])
   end
 
   @spec put_many(pid(), list(String.t())) :: :ok

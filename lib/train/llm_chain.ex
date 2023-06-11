@@ -13,7 +13,8 @@ defmodule Train.LlmChain do
             log_level: :info,
             tools: [],
             system_prompt: Prompts.SystemPrompt,
-            human_prompt: Prompts.HumanPrompt
+            human_prompt: Prompts.HumanPrompt,
+            tool_response_prompt: Prompts.ToolResponsePrompt
 
   @type t :: %__MODULE__{
           max_iterations: integer(),
@@ -23,7 +24,8 @@ defmodule Train.LlmChain do
           log_level: atom(),
           tools: list(Tools.tool_wrapper()),
           system_prompt: PromptSpec.t(),
-          human_prompt: PromptSpec.t()
+          human_prompt: PromptSpec.t(),
+          tool_response_prompt: PromptSpec.t()
         }
 
   @doc """

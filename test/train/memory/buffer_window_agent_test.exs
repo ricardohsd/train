@@ -11,7 +11,8 @@ defmodule Train.Memory.BufferWindowAgentTest do
     BufferWindowAgent.put(pid, %{role: "user", content: "xyz"})
     BufferWindowAgent.put(pid, %{role: "user", content: "abc"})
 
-    assert ["Human: xyz", "Human: abc"] == BufferWindowAgent.get(pid)
+    assert [%{role: "user", content: "xyz"}, %{role: "user", content: "abc"}] ==
+             BufferWindowAgent.get(pid)
   end
 
   test "keeps a window of 2 messages" do
@@ -26,8 +27,11 @@ defmodule Train.Memory.BufferWindowAgentTest do
     ])
 
     assert [
-             "Human: What is my goal?",
-             "AI: As you said before. Your goal is to relax at the beach."
+             %{role: "user", content: "What is my goal?"},
+             %{
+               role: "assistant",
+               content: "As you said before. Your goal is to relax at the beach."
+             }
            ] == BufferWindowAgent.get(pid)
   end
 
@@ -44,7 +48,8 @@ defmodule Train.Memory.BufferWindowAgentTest do
       %{role: "system", content: "123"}
     ])
 
-    assert ["Human: abc", "AI: xyz"] == BufferWindowAgent.get(pid)
+    assert [%{role: "user", content: "abc"}, %{role: "assistant", content: "xyz"}] ==
+             BufferWindowAgent.get(pid)
   end
 
   test "clears the agent state" do

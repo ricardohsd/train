@@ -48,10 +48,14 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
   test "uses the chat history as context", %{chain: chain} do
     use_cassette "agents/conversational_multiple" do
       chat_history = [
-        "AI: Angela Dorothea Merkel is a German former politician and scientist who served as Chancellor of Germany from November 2005 to December 2021. A member of the Christian Democratic Union, she previously served as Leader of the Opposition from 2002 to 2005 and as Leader of the Christian Democratic Union from 2000 to 2018."
+        %{
+          role: "assistant",
+          content:
+            "Angela Dorothea Merkel is a German former politician and scientist who served as Chancellor of Germany from November 2005 to December 2021. A member of the Christian Democratic Union, she previously served as Leader of the Opposition from 2002 to 2005 and as Leader of the Christian Democratic Union from 2000 to 2018."
+        }
       ]
 
-      {:ok, [%{content: _, role: "system"} | messages], response} =
+      {:ok, messages, response} =
         ChatAgent.call(
           chain,
           "In which city was she born?",

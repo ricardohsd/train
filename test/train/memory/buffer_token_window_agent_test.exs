@@ -13,8 +13,8 @@ defmodule Train.Memory.BufferTokenWindowAgentTest do
     BufferTokenWindowAgent.put(pid, %{content: "Hamburg, Germany", role: "assistant"})
 
     assert [
-             "Human: In which city was she born?",
-             "AI: Hamburg, Germany"
+             %{role: "user", content: "In which city was she born?"},
+             %{role: "assistant", content: "Hamburg, Germany"}
            ] ==
              BufferTokenWindowAgent.get(pid)
   end
@@ -63,12 +63,35 @@ defmodule Train.Memory.BufferTokenWindowAgentTest do
     ])
 
     assert [
-             "Human: My interest here is to explore the potential of integrating Large Language Models with external knowledge",
-             "AI: Interesting! Large Language Models are a type of artificial intelligence that can process natural language and generate text. They can be used to generate text from a given context, or to answer questions about a given context. Integrating them with external knowledge can help them to better understand the context and generate more accurate results. Do you have any specific questions about this integration?",
-             "Human: I just want to analyze the different possibilities. What can you think of?",
-             "AI: There are many possibilities for integrating Large Language Models with external knowledge. For example, you could use external knowledge to provide additional context to the model, or to provide additional training data. You could also use external knowledge to help the model better understand the context of a given text, or to help it generate more accurate results.",
-             "Human: Which data source types could be used to give context to the model?",
-             "AI: Data sources that could be used to give context to the model include text corpora, structured databases, and ontologies. Text corpora provide a large amount of text data that can be used to train the model and provide additional context. Structured databases provide structured data that can be used to provide additional context to the model. Ontologies provide a structured representation of knowledge that can be used to provide additional context to the model."
+             %{
+               role: "user",
+               content:
+                 "My interest here is to explore the potential of integrating Large Language Models with external knowledge"
+             },
+             %{
+               role: "assistant",
+               content:
+                 "Interesting! Large Language Models are a type of artificial intelligence that can process natural language and generate text. They can be used to generate text from a given context, or to answer questions about a given context. Integrating them with external knowledge can help them to better understand the context and generate more accurate results. Do you have any specific questions about this integration?"
+             },
+             %{
+               role: "user",
+               content:
+                 "I just want to analyze the different possibilities. What can you think of?"
+             },
+             %{
+               role: "assistant",
+               content:
+                 "There are many possibilities for integrating Large Language Models with external knowledge. For example, you could use external knowledge to provide additional context to the model, or to provide additional training data. You could also use external knowledge to help the model better understand the context of a given text, or to help it generate more accurate results."
+             },
+             %{
+               role: "user",
+               content: "Which data source types could be used to give context to the model?"
+             },
+             %{
+               role: "assistant",
+               content:
+                 "Data sources that could be used to give context to the model include text corpora, structured databases, and ontologies. Text corpora provide a large amount of text data that can be used to train the model and provide additional context. Structured databases provide structured data that can be used to provide additional context to the model. Ontologies provide a structured representation of knowledge that can be used to provide additional context to the model."
+             }
            ] == BufferTokenWindowAgent.get(pid)
   end
 
@@ -90,7 +113,11 @@ defmodule Train.Memory.BufferTokenWindowAgentTest do
     ])
 
     assert [
-             "AI: Data sources that could be used to give context to the model include text corpora, structured databases, and ontologies. Text corpora provide a large amount of text data that can be used to train the model and provide additional context. Structured databases provide structured data that can be used to provide additional context to the model. Ontologies provide a structured representation of knowledge that can be used to provide additional context to the model."
+             %{
+               role: "assistant",
+               content:
+                 "Data sources that could be used to give context to the model include text corpora, structured databases, and ontologies. Text corpora provide a large amount of text data that can be used to train the model and provide additional context. Structured databases provide structured data that can be used to provide additional context to the model. Ontologies provide a structured representation of knowledge that can be used to provide additional context to the model."
+             }
            ] == BufferTokenWindowAgent.get(pid)
   end
 
