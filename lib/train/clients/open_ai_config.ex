@@ -21,10 +21,10 @@ defmodule Train.Clients.OpenAIConfig do
           stream: boolean()
         }
 
-  @type model :: :"gpt-4" | :"gpt-3.5-turbo"
+  @type model :: :"gpt-4" | :"gpt-3.5-turbo" | :"gpt-3.5-turbo-16k"
 
   @api_url "https://api.openai.com"
-  @max_tokens %{:"gpt-3.5-turbo" => 2048, :"gpt-4" => 4096}
+  @max_tokens %{:"gpt-3.5-turbo" => 2048, :"gpt-4" => 4096, :"gpt-3.5-turbo-16k" => 8192}
 
   def new(opts \\ %{}) do
     config = %__MODULE__{api_url: @api_url, model: :"gpt-4"}
