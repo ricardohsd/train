@@ -2,43 +2,38 @@ defmodule Train.Clients.OpenAI do
   require Logger
 
   alias Train.Clients.OpenAIConfig
+  alias Train.Tiktoken
 
   @type message :: %{
           required(:role) => String.t(),
           required(:content) => String.t()
         }
 
-  @spec generate(:user, String.t(), OpenAIConfig.t()) ::
+  @spec generate(list(message()), OpenAIConfig.t()) ::
           {:error, [binary], binary} | {:ok, any, binary}
-  @spec generate(:messages, list(message()), OpenAIConfig.t()) ::
+  @spec generate(String.t(), OpenAIConfig.t()) ::
           {:error, [binary], binary} | {:ok, any, binary}
-  def generate(:user, message, config) do
-    generate(:messages, [%{role: "user", content: message}], config)
+  def generate(messages, %OpenAIConfig{stream: false} = config) when is_list(messages) do
+    completions(messages, config)
   end
 
-  def generate(:messages, messages, %OpenAIConfig{stream: false} = config) do
-    completions(:messages, messages, config)
-  end
-
-  def generate(:messages, messages, %OpenAIConfig{stream: true} = config) do
+  def generate(messages, %OpenAIConfig{stream: true} = config) when is_list(messages) do
     {:ok, messages, stream} = stream(:messages, messages, config)
 
     {:ok, messages, stream |> Enum.join("")}
+  end
+
+  def generate(message, config) when is_binary(message) do
+    generate([%{role: "user", content: message}], config)
   end
 
   @doc """
   Queries OpenAI chat completions with the given messages.
   Accepts gpt-4 or gpt-3.5-turbo.
   """
-  @spec completions(:user, String.t(), OpenAIConfig.t()) ::
+  @spec completions(list(message()), OpenAIConfig.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
-  def completions(:user, message, config) do
-    completions(:messages, [%{role: "user", content: message}], config)
-  end
-
-  @spec completions(:messages, list(message()), OpenAIConfig.t()) ::
-          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
-  def completions(:messages, messages, config) do
+  def completions(messages, config) do
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
            chat(messages, config),
          {:ok, %{"choices" => [resp | _]}} <- Jason.decode(body),
@@ -60,22 +55,23 @@ defmodule Train.Clients.OpenAI do
 
     %{model: model, temperature: temperature} = config
 
-    body =
-      Jason.encode!(%{
-        model: model,
-        temperature: temperature,
-        max_tokens: OpenAIConfig.get_max_tokens(model),
-        messages: messages
-      })
+    body = %{
+      model: model,
+      temperature: temperature,
+      max_tokens: OpenAIConfig.get_max_tokens(model),
+      messages: messages
+    }
 
-    {:ok, tokens} = ExTiktoken.CL100K.encode(body)
-    log("-- Tokens: #{length(tokens)}", config)
+    json = Jason.encode!(body)
+
+    tokens = Tiktoken.count_tokens(json)
+    log("-- Tokens: #{tokens}", config)
 
     options = [recv_timeout: config.recv_timeout, timeout: config.timeout]
 
     log("-- Fetching OpenAI chat", config)
 
-    case HTTPoison.post(url, body, headers(), options) do
+    case HTTPoison.post(url, json, headers(), options) do
       {:error, %HTTPoison.Error{reason: :timeout}} ->
         log("-- Retrying #{retries}", config)
         Process.sleep(config.retry_backoff)

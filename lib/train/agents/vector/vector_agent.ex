@@ -28,7 +28,7 @@ defmodule Train.Agents.VectorAgent do
          {:ok, vector} <- Pinecone.query(Enum.take(embeddings, dimension), pinecone_config),
          document <- VectorDocument.parse(vector),
          main_prompt <- prompt.with(question, document.text, document.metadata),
-         {:ok, messages, result} <- OpenAI.generate(:user, main_prompt, openai_config) do
+         {:ok, messages, result} <- OpenAI.generate(main_prompt, openai_config) do
       count_tokens(main_prompt, result, chain)
       {:ok, messages, result}
     else

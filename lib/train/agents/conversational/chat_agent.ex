@@ -45,7 +45,7 @@ defmodule Train.Agents.Conversational.ChatAgent do
          %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     with messages <- PromptBuilder.build(chain, question, chat_history, intermediate_steps),
-         {:ok, _, raw_resp} <- OpenAI.generate(:messages, messages, openai_config) do
+         {:ok, _, raw_resp} <- OpenAI.generate(messages, openai_config) do
       log("\nIt: #{iteration}, Messages: #{inspect(messages)}", chain)
       log("\nIt: #{iteration}, LLM response: #{inspect(raw_resp)}", chain)
 
