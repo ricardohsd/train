@@ -57,7 +57,7 @@ defmodule Train.Agents.VectorAgent do
       openai_config == nil ->
         {:error, "OpenAI config can't be null"}
 
-      pinecone_config == nil || pinecone_config.namespace == nil ->
+      pinecone_config == nil ->
         {:error, "Pinecone config can't be null"}
 
       true ->

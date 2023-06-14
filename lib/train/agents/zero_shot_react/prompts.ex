@@ -1,4 +1,4 @@
-defmodule Train.Agents.ZeroShotReact.Prompt do
+defmodule Train.Agents.ZeroShotReact.Prompts do
   def prefix do
     "Answer the following questions as best you can. You have access to the following tools:"
   end
