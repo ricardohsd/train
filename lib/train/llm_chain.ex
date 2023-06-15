@@ -12,6 +12,7 @@ defmodule Train.LlmChain do
             pinecone_config: PineconeConfig.new(),
             log_level: :info,
             tools: [],
+            functions: [],
             prompt_template: Prompts
 
   @type t :: %__MODULE__{
@@ -21,6 +22,7 @@ defmodule Train.LlmChain do
           pinecone_config: PineconeConfig.t(),
           log_level: atom(),
           tools: list(Tools.tool_wrapper()),
+          functions: list(Tools.Spec.t()),
           prompt_template: PromptSpec.t()
         }
 

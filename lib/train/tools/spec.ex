@@ -3,6 +3,8 @@ defmodule Train.Tools.Spec do
 
   @type t :: module()
 
+  @callback to_func() :: map()
+
   @doc """
   Async query the given tool and return the result or error.
   """

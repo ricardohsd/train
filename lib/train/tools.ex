@@ -1,11 +1,7 @@
 defmodule Train.Tools do
   alias Train.LlmChain
 
-  @type tool_wrapper :: %{
-          required(:name) => String.t(),
-          required(:description) => String.t(),
-          required(:func) => Train.Tools.Spec.t()
-        }
+  @type tool_wrapper :: %{}
 
   @spec run_action(map(), LlmChain.t()) :: {:error, any()} | {:ok, String.t()}
   def run_action(action, %LlmChain{tools: tools} = chain) do

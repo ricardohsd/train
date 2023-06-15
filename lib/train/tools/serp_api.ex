@@ -7,6 +7,27 @@ defmodule Train.Tools.SerpApi do
 
   @retry 5
 
+  @name "google_search"
+
+  @impl true
+  def to_func() do
+    %{
+      name: @name,
+      description:
+        "Useful for when you need to answer questions about current events. You should ask targeted questions",
+      parameters: %{
+        type: "object",
+        properties: %{
+          query: %{
+            type: "string",
+            description: "Query for Google search"
+          }
+        },
+        required: ["query"]
+      }
+    }
+  end
+
   @impl true
   @spec query(String.t(), LlmChain.t()) :: {:error, any} | {:ok, String.t()}
   def query(query, _) do

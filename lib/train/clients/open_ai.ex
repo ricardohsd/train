@@ -34,9 +34,7 @@ defmodule Train.Clients.OpenAI do
   @spec completions(list(message()), OpenAIConfig.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
   def completions(messages, config) do
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
-           chat(messages, config),
-         {:ok, %{"choices" => [resp | _]}} <- Jason.decode(body),
+    with {:ok, %{"choices" => [resp | _]}} <- chat(messages, config),
          %{"message" => %{"role" => "assistant", "content" => content}} <- resp do
       {:ok, messages, content}
     else
@@ -46,11 +44,11 @@ defmodule Train.Clients.OpenAI do
   end
 
   # Return timeout error when retry count reaches 0
-  defp chat(_, %OpenAIConfig{retries: 0}) do
+  def chat(_, %OpenAIConfig{retries: 0}) do
     {:error, %HTTPoison.Error{reason: "timeout", id: nil}}
   end
 
-  defp chat(messages, %OpenAIConfig{api_url: api_url, retries: retries} = config) do
+  def chat(messages, %OpenAIConfig{api_url: api_url} = config) do
     url = "#{api_url}/v1/chat/completions"
 
     %{model: model, temperature: temperature} = config
@@ -62,6 +60,26 @@ defmodule Train.Clients.OpenAI do
       messages: messages
     }
 
+    post(messages, url, body, config)
+  end
+
+  def chat(messages, functions, %OpenAIConfig{api_url: api_url} = config) do
+    url = "#{api_url}/v1/chat/completions"
+
+    %{model: model, temperature: temperature} = config
+
+    body = %{
+      model: model,
+      temperature: temperature,
+      max_tokens: OpenAIConfig.get_max_tokens(model),
+      messages: messages,
+      functions: functions
+    }
+
+    post(messages, url, body, config)
+  end
+
+  defp post(messages, url, body, %OpenAIConfig{retries: retries} = config) do
     json = Jason.encode!(body)
 
     tokens = Tiktoken.count_tokens(json)
@@ -76,6 +94,9 @@ defmodule Train.Clients.OpenAI do
         log("-- Retrying #{retries}", config)
         Process.sleep(config.retry_backoff)
         chat(messages, %OpenAIConfig{config | retries: retries - 1})
+
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        Jason.decode(body)
 
       other ->
         other
