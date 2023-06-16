@@ -45,15 +45,15 @@ defmodule Train.Agents.ZeroShotReact.Chat do
        ) do
     with messages <- PromptBuilder.build(chain, question, intermediate_steps),
          {:ok, messages, choice} <- OpenAI.generate(messages, openai_config) do
-      log("\nIt: #{iteration}, Messages: #{inspect(messages)}\n\n", chain)
-      log("\nIt: #{iteration}, LLm response: #{inspect(choice)}", chain)
+      log("\nIt: #{iteration}, Messages: #{inspect(messages, pretty: true)}\n\n", chain)
+      log("\nIt: #{iteration}, LLm response: #{inspect(choice, pretty: true)}", chain)
 
       {action, tool_result, intermediate_steps} =
         choice
         |> OutputParser.parse()
         |> process_actions(intermediate_steps, nil, nil, chain)
 
-      log("\nIt: #{iteration}, Steps: #{inspect(intermediate_steps)}", chain)
+      log("\nIt: #{iteration}, Steps: #{inspect(intermediate_steps, pretty: true)}", chain)
 
       if action["action"] == "Final Answer" do
         {messages, tool_result}

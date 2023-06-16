@@ -47,9 +47,9 @@ defmodule Train.Functions.ZeroShotReact.Chat do
     with messages <- PromptBuilder.build(question, intermediate_steps, prompt),
          functions <- Functions.format_tools(tools),
          {:ok, response} <- OpenAI.chat(messages, functions, openai_config) do
-      log("\nIt: #{iteration}, Messages: #{inspect(messages)}", chain)
-      log("\nIt: #{iteration}, LLm response: #{inspect(response)}", chain)
-      log("\nIt: #{iteration}, Steps: #{inspect(intermediate_steps)}", chain)
+      log("\nIt: #{iteration}, Messages: #{inspect(messages, pretty: true)}", chain)
+      log("\nIt: #{iteration}, LLm response: #{inspect(response, pretty: true)}", chain)
+      log("\nIt: #{iteration}, Steps: #{inspect(intermediate_steps, pretty: true)}", chain)
 
       process(response, question, intermediate_steps, prompt, chain)
     else

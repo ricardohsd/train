@@ -46,14 +46,14 @@ defmodule Train.Agents.Conversational.ChatAgent do
        ) do
     with messages <- PromptBuilder.build(chain, question, chat_history, intermediate_steps),
          {:ok, _, raw_resp} <- OpenAI.generate(messages, openai_config) do
-      log("\nIt: #{iteration}, Messages: #{inspect(messages)}", chain)
-      log("\nIt: #{iteration}, LLM response: #{inspect(raw_resp)}", chain)
+      log("\nIt: #{iteration}, Messages: #{inspect(messages, pretty: true)}", chain)
+      log("\nIt: #{iteration}, LLM response: #{inspect(raw_resp, pretty: true)}", chain)
 
       action = raw_resp |> OutputParser.parse()
-      log("\nIt: #{iteration}, Parsed action: #{inspect(action)}", chain)
+      log("\nIt: #{iteration}, Parsed action: #{inspect(action, pretty: true)}", chain)
 
       {:ok, tool_result} = Tools.run_action(action, chain)
-      log("\nIt: #{iteration}, Tool result: #{inspect(tool_result)}", chain)
+      log("\nIt: #{iteration}, Tool result: #{inspect(tool_result, pretty: true)}", chain)
 
       intermediate_steps = {raw_resp, tool_result}
 
