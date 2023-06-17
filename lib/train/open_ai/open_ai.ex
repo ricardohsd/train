@@ -1,7 +1,7 @@
-defmodule Train.Clients.OpenAI do
+defmodule Train.OpenAI do
   require Logger
 
-  alias Train.Clients.OpenAIConfig
+  alias Train.OpenAI.Config
   alias Train.Tiktoken
   alias Train.Clients.StreamReducer
 
@@ -10,15 +10,15 @@ defmodule Train.Clients.OpenAI do
           required(:content) => String.t()
         }
 
-  @spec generate(list(message()), OpenAIConfig.t()) ::
+  @spec generate(list(message()), Config.t()) ::
           {:error, [binary], binary} | {:ok, any, binary}
-  @spec generate(String.t(), OpenAIConfig.t()) ::
+  @spec generate(String.t(), Config.t()) ::
           {:error, [binary], binary} | {:ok, any, binary}
-  def generate(messages, %OpenAIConfig{stream: false} = config) when is_list(messages) do
+  def generate(messages, %Config{stream: false} = config) when is_list(messages) do
     chat!(messages, config)
   end
 
-  def generate(messages, %OpenAIConfig{stream: true} = config) when is_list(messages) do
+  def generate(messages, %Config{stream: true} = config) when is_list(messages) do
     {:ok, messages, stream} = stream(:messages, messages, config)
     %{"choices" => [%{"message" => %{"content" => content}}]} = StreamReducer.reduce(stream)
 
@@ -33,7 +33,7 @@ defmodule Train.Clients.OpenAI do
   Queries OpenAI chat completions with the given messages and return the human response.
   Accepts gpt-4 or gpt-3.5-turbo.
   """
-  @spec chat!(list(message()), OpenAIConfig.t()) ::
+  @spec chat!(list(message()), Config.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
   def chat!(messages, config) do
     with {:ok, %{"choices" => [resp | _]}} <- chat(messages, config),
@@ -49,12 +49,12 @@ defmodule Train.Clients.OpenAI do
   Queries OpenAI chat completions with the given messages and returns the API's response.
   Accepts gpt-4 or gpt-3.5-turbo.
   """
-  @spec chat(list(message()), OpenAIConfig.t()) :: {:error, HTTPoison.Error.t()} | {:ok, map()}
-  def chat(_, %OpenAIConfig{retries: 0}) do
+  @spec chat(list(message()), Config.t()) :: {:error, HTTPoison.Error.t()} | {:ok, map()}
+  def chat(_, %Config{retries: 0}) do
     {:error, %HTTPoison.Error{reason: "timeout", id: nil}}
   end
 
-  def chat(messages, %OpenAIConfig{api_url: api_url, stream: false} = config) do
+  def chat(messages, %Config{api_url: api_url, stream: false} = config) do
     url = "#{api_url}/v1/chat/completions"
 
     %{model: model, temperature: temperature} = config
@@ -62,16 +62,16 @@ defmodule Train.Clients.OpenAI do
     body = %{
       model: model,
       temperature: temperature,
-      max_tokens: OpenAIConfig.get_max_tokens(model),
+      max_tokens: Config.get_max_tokens(model),
       messages: messages
     }
 
     post(messages, url, body, config)
   end
 
-  @spec chat(list(message()), list(map()), OpenAIConfig.t()) ::
+  @spec chat(list(message()), list(map()), Config.t()) ::
           {:error, HTTPoison.Error.t()} | {:ok, map()}
-  def chat(messages, functions, %OpenAIConfig{api_url: api_url, stream: false} = config) do
+  def chat(messages, functions, %Config{api_url: api_url, stream: false} = config) do
     url = "#{api_url}/v1/chat/completions"
 
     %{model: model, temperature: temperature} = config
@@ -79,7 +79,7 @@ defmodule Train.Clients.OpenAI do
     body = %{
       model: model,
       temperature: temperature,
-      max_tokens: OpenAIConfig.get_max_tokens(model),
+      max_tokens: Config.get_max_tokens(model),
       messages: messages,
       functions: functions
     }
@@ -87,13 +87,13 @@ defmodule Train.Clients.OpenAI do
     post(messages, url, body, config)
   end
 
-  def chat(messages, functions, %OpenAIConfig{stream: true} = config) do
+  def chat(messages, functions, %Config{stream: true} = config) do
     {:ok, _, stream} = stream(messages, functions, config)
     resp = StreamReducer.reduce(stream)
     {:ok, resp}
   end
 
-  defp post(messages, url, body, %OpenAIConfig{retries: retries} = config) do
+  defp post(messages, url, body, %Config{retries: retries} = config) do
     json = Jason.encode!(body)
 
     tokens = Tiktoken.count_tokens(json)
@@ -107,7 +107,7 @@ defmodule Train.Clients.OpenAI do
       {:error, %HTTPoison.Error{reason: :timeout}} ->
         log("-- Retrying #{retries}", config)
         Process.sleep(config.retry_backoff)
-        chat(messages, %OpenAIConfig{config | retries: retries - 1})
+        chat(messages, %Config{config | retries: retries - 1})
 
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         Jason.decode(body)
@@ -120,8 +120,8 @@ defmodule Train.Clients.OpenAI do
   @doc """
   Queries OpenAI's embedding API and return the :ok and the list of embeddings.
   """
-  @spec embedding(String.t(), OpenAIConfig.t()) :: {:ok, [float()]} | {:error, String.t()}
-  def embedding(prompt, %OpenAIConfig{api_url: api_url}) do
+  @spec embedding(String.t(), Config.t()) :: {:ok, [float()]} | {:error, String.t()}
+  def embedding(prompt, %Config{api_url: api_url}) do
     with {:ok, %{"data" => [data | _]}} <- _embedding(prompt, api_url),
          %{"embedding" => embeddings} <- data do
       {:ok, embeddings}
@@ -140,7 +140,7 @@ defmodule Train.Clients.OpenAI do
   @doc """
   Similar to embedding/2 but raises if there is a problem fetching the embeddings.
   """
-  @spec embedding!(String.t(), OpenAIConfig.t()) :: [float()]
+  @spec embedding!(String.t(), Config.t()) :: [float()]
   def embedding!(prompt, config) do
     case embedding(prompt, config) do
       {:ok, embeddings} -> embeddings
@@ -176,11 +176,11 @@ defmodule Train.Clients.OpenAI do
   Queries OpenAI's completions endpoint with
   a single or multiple messages and streams the response.
   """
-  @spec stream(:messages, list(message()), OpenAIConfig.t()) :: Enumerable.t()
+  @spec stream(:messages, list(message()), Config.t()) :: Enumerable.t()
   def stream(
         :messages,
         messages,
-        %OpenAIConfig{
+        %Config{
           api_url: api_url,
           model: model,
           temperature: temperature
@@ -193,7 +193,7 @@ defmodule Train.Clients.OpenAI do
         model: model,
         stream: true,
         temperature: temperature,
-        max_tokens: OpenAIConfig.get_max_tokens(model),
+        max_tokens: Config.get_max_tokens(model),
         messages: messages
       })
 
@@ -210,11 +210,11 @@ defmodule Train.Clients.OpenAI do
     }
   end
 
-  @spec stream(list(message()), list(map()), OpenAIConfig.t()) :: Enumerable.t()
+  @spec stream(list(message()), list(map()), Config.t()) :: Enumerable.t()
   def stream(
         messages,
         functions,
-        %OpenAIConfig{
+        %Config{
           api_url: api_url,
           model: model,
           temperature: temperature
@@ -227,7 +227,7 @@ defmodule Train.Clients.OpenAI do
         model: model,
         stream: true,
         temperature: temperature,
-        max_tokens: OpenAIConfig.get_max_tokens(model),
+        max_tokens: Config.get_max_tokens(model),
         messages: messages,
         functions: functions
       })
@@ -382,7 +382,7 @@ defmodule Train.Clients.OpenAI do
     ]
   end
 
-  defp log(message, %OpenAIConfig{log_level: log_level}) do
+  defp log(message, %Config{log_level: log_level}) do
     Logger.log(log_level, message)
   end
 end

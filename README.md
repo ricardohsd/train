@@ -103,7 +103,7 @@ chain =
       Train.LlmChain.new(%{
         tools: tools,
         openai_config:
-          Train.Clients.OpenAIConfig.new(%{model: :"gpt-3.5-turbo", temperature: 0.0})
+          Train.OpenAI.Config.new(%{model: :"gpt-3.5-turbo", temperature: 0.0})
       })
 chain |> Train.Agents.ZeroShotReact.Chat.call("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
 # 3.991298452658078
@@ -141,7 +141,7 @@ chain =
     memory: {memory_pid, Train.Memory.BufferTokenWindowAgent},
     functions: functions,
     openai_config:
-      Train.Clients.OpenAIConfig.new(%{model: :"gpt-3.5-turbo-16k", temperature: 0.0})
+      Train.OpenAI.Config.new(%{model: :"gpt-3.5-turbo-16k", temperature: 0.0})
   })
 {:ok, response} =
   chain

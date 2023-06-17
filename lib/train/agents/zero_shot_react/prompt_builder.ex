@@ -4,7 +4,7 @@ defmodule Train.Agents.ZeroShotReact.PromptBuilder do
 
   alias Train.Agents.ZeroShotReact.Prompts
   alias Train.LlmChain
-  alias Train.Clients.OpenAI
+  alias Train.OpenAI
 
   @spec build(LlmChain.t(), String.t(), list({atom(), String.t()})) :: list(OpenAI.message())
   def build(

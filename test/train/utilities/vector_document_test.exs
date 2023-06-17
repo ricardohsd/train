@@ -2,8 +2,8 @@ defmodule Train.Utilities.VectorDocumentTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Train.Clients.OpenAI
-  alias Train.Clients.OpenAIConfig
+  alias Train.OpenAI
+  alias Train.OpenAI.Config
   alias Train.Clients.PineconeConfig
   alias Train.Clients.Pinecone
   alias Train.Utilities.VectorDocument
@@ -12,7 +12,7 @@ defmodule Train.Utilities.VectorDocumentTest do
 
   setup_all do
     HTTPoison.start()
-    %{config: OpenAIConfig.new(%{model: :"gpt-3.5-turbo"})}
+    %{config: Config.new(%{model: :"gpt-3.5-turbo"})}
   end
 
   describe "aggregate records into a single document" do

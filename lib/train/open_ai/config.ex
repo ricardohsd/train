@@ -1,4 +1,4 @@
-defmodule Train.Clients.OpenAIConfig do
+defmodule Train.OpenAI.Config do
   defstruct api_url: nil,
             model: nil,
             retries: 5,

@@ -6,7 +6,7 @@ defmodule Train.Agents.VectorAgent do
   import Train.LevelLogger
 
   alias Train.LlmChain
-  alias Train.Clients.OpenAI
+  alias Train.OpenAI
   alias Train.Clients.Pinecone
   alias Train.Agents.VectorPromptSpec
   alias Train.Utilities.VectorDocument

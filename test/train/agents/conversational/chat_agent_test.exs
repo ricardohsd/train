@@ -3,7 +3,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   alias Train.Agents.Conversational.ChatAgent
-  alias Train.Clients.OpenAIConfig
+  alias Train.OpenAI.Config
 
   setup_all do
     Logger.configure(level: :warning)
@@ -26,7 +26,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
       Train.LlmChain.new(%{
         memory: nil,
         tools: tools,
-        openai_config: OpenAIConfig.new(%{model: :"gpt-3.5-turbo"})
+        openai_config: Config.new(%{model: :"gpt-3.5-turbo"})
       })
 
     %{chain: chain}

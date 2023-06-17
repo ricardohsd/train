@@ -1,6 +1,6 @@
 defmodule Train.LlmChain do
   alias Train.Tools
-  alias Train.Clients.OpenAIConfig
+  alias Train.OpenAI.Config
   alias Train.Clients.PineconeConfig
   alias Train.PromptSpec
   alias Train.Memory.MemorySpec
@@ -8,7 +8,7 @@ defmodule Train.LlmChain do
 
   defstruct max_iterations: 5,
             memory: nil,
-            openai_config: OpenAIConfig.new(),
+            openai_config: Config.new(),
             pinecone_config: PineconeConfig.new(),
             log_level: :info,
             tools: [],
@@ -18,7 +18,7 @@ defmodule Train.LlmChain do
   @type t :: %__MODULE__{
           max_iterations: integer(),
           memory: {pid(), MemorySpec.t()},
-          openai_config: OpenAIConfig.t(),
+          openai_config: Config.t(),
           pinecone_config: PineconeConfig.t(),
           log_level: atom(),
           tools: list(Tools.tool_wrapper()),

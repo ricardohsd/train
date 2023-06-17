@@ -1,7 +1,7 @@
 defmodule Train.Functions.Conversational.ChatAgent do
   import Train.LevelLogger
 
-  alias Train.Clients.OpenAI
+  alias Train.OpenAI
   alias Train.Functions
   alias Train.LlmChain
   alias Train.Functions.Conversational.PromptBuilder

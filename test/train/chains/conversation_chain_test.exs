@@ -3,7 +3,7 @@ defmodule Train.Chains.ConversationChainTest do
 
   alias Train.LlmChain
   alias Train.Chains.ConversationChain
-  alias Train.Clients.OpenAIConfig
+  alias Train.OpenAI.Config
 
   setup do
     tools = [
@@ -27,7 +27,7 @@ defmodule Train.Chains.ConversationChainTest do
 
   test "memory agent's pid must be present", %{tools: tools} do
     {:error, error} =
-      %LlmChain{tools: tools, memory: {nil, nil}, openai_config: OpenAIConfig.new()}
+      %LlmChain{tools: tools, memory: {nil, nil}, openai_config: Config.new()}
       |> ConversationChain.run("What is a continent?")
 
     assert "memory agent pid can't be null" == error
@@ -45,7 +45,7 @@ defmodule Train.Chains.ConversationChainTest do
     {:error, error} =
       %LlmChain{
         tools: tools,
-        openai_config: OpenAIConfig.new(),
+        openai_config: Config.new(),
         memory: {self(), Train.Memory.BufferAgent},
         max_iterations: 0
       }

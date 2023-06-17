@@ -13,7 +13,7 @@ defmodule Train.Functions.ZeroShotReact.ChatTest do
       Train.LlmChain.new(%{
         functions: tools,
         openai_config:
-          Train.Clients.OpenAIConfig.new(%{model: :"gpt-3.5-turbo-16k", temperature: 0.0})
+          Train.OpenAI.Config.new(%{model: :"gpt-3.5-turbo-16k", temperature: 0.0})
       })
 
     %{chain: chain}

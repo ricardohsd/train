@@ -1,7 +1,7 @@
 defmodule Train.Agents.ZeroShotReact.Chat do
   import Train.LevelLogger
 
-  alias Train.Clients.OpenAI
+  alias Train.OpenAI
   alias Train.Agents.ZeroShotReact.OutputParser
   alias Train.LlmChain
   alias Train.Agents.ZeroShotReact.PromptBuilder
