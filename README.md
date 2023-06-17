@@ -128,6 +128,28 @@ defmodule Search do
 end
 ```
 
+## Function calling
+Instead of having prompts that inform the AI how to think and ask for functions to be called we can use [OpenAI's function calling](https://openai.com/blog/function-calling-and-other-api-updates).
+
+### Conversational agent
+```elixir
+{:ok, memory_pid} = Train.Memory.BufferTokenWindowAgent.start_link()
+functions = [Train.Tools.SerpApi, Train.Tools.BasicCalculator]
+
+chain =
+  Train.LlmChain.new(%{
+    memory: {memory_pid, Train.Memory.BufferTokenWindowAgent},
+    functions: functions,
+    openai_config:
+      Train.Clients.OpenAIConfig.new(%{model: :"gpt-3.5-turbo-16k", temperature: 0.0})
+  })
+{:ok, response} =
+  chain
+  |> Train.Functions.Conversational.ChatAgent.run( "Who is currently the chanceller of Germany in 2023?")
+# {:ok,
+# "The current chancellor of Germany in 2023 is Olaf Scholz. He has been serving as the chancellor since December 8, 2021. Olaf Scholz is a member of the Social Democratic Party and previously served as the Vice Chancellor in the fourth Merkel cabinet and as the Federal Minister of Finance from 2018 to 2021."}
+```
+
 ## Goals
 - [] Implement other types of memory buffer like window and summary explained on this [post](https://www.pinecone.io/learn/langchain-conversational-memory/).
 - [] Create other tools like: Wikipedia, Wolfram, PostgreSQL/MySQL.
