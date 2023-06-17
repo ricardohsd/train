@@ -84,6 +84,7 @@ defmodule Train.Functions.ZeroShotReact.Chat do
     function = %{role: "function", name: name, content: "#{tool_result}"}
 
     intermediate_steps = [function | [assistant | intermediate_steps]]
+    log("\nIt: #{iteration}, Intermediate steps: #{inspect(intermediate_steps, pretty: true)}", chain)
 
     take_next_steps(tool_result, question, intermediate_steps, prompt, %{
       chain
