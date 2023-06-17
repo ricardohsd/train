@@ -3,6 +3,7 @@ defmodule Train.Clients.OpenAI do
 
   alias Train.Clients.OpenAIConfig
   alias Train.Tiktoken
+  alias Train.Clients.StreamReducer
 
   @type message :: %{
           required(:role) => String.t(),
@@ -14,26 +15,27 @@ defmodule Train.Clients.OpenAI do
   @spec generate(String.t(), OpenAIConfig.t()) ::
           {:error, [binary], binary} | {:ok, any, binary}
   def generate(messages, %OpenAIConfig{stream: false} = config) when is_list(messages) do
-    completions(messages, config)
+    chat!(messages, config)
   end
 
   def generate(messages, %OpenAIConfig{stream: true} = config) when is_list(messages) do
     {:ok, messages, stream} = stream(:messages, messages, config)
+    %{"choices" => [%{"message" => %{"content" => content}}]} = StreamReducer.reduce(stream)
 
-    {:ok, messages, stream |> Enum.join("")}
+    {:ok, messages, content}
   end
 
   def generate(message, config) when is_binary(message) do
-    generate([%{role: "user", content: message}], config)
+    chat!([%{role: "user", content: message}], config)
   end
 
   @doc """
-  Queries OpenAI chat completions with the given messages.
+  Queries OpenAI chat completions with the given messages and return the human response.
   Accepts gpt-4 or gpt-3.5-turbo.
   """
-  @spec completions(list(message()), OpenAIConfig.t()) ::
+  @spec chat!(list(message()), OpenAIConfig.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
-  def completions(messages, config) do
+  def chat!(messages, config) do
     with {:ok, %{"choices" => [resp | _]}} <- chat(messages, config),
          %{"message" => %{"role" => "assistant", "content" => content}} <- resp do
       {:ok, messages, content}
@@ -43,12 +45,16 @@ defmodule Train.Clients.OpenAI do
     end
   end
 
-  # Return timeout error when retry count reaches 0
+  @doc """
+  Queries OpenAI chat completions with the given messages and returns the API's response.
+  Accepts gpt-4 or gpt-3.5-turbo.
+  """
+  @spec chat(list(message()), OpenAIConfig.t()) :: {:error, HTTPoison.Error.t()} | {:ok, map()}
   def chat(_, %OpenAIConfig{retries: 0}) do
     {:error, %HTTPoison.Error{reason: "timeout", id: nil}}
   end
 
-  def chat(messages, %OpenAIConfig{api_url: api_url} = config) do
+  def chat(messages, %OpenAIConfig{api_url: api_url, stream: false} = config) do
     url = "#{api_url}/v1/chat/completions"
 
     %{model: model, temperature: temperature} = config
@@ -63,7 +69,9 @@ defmodule Train.Clients.OpenAI do
     post(messages, url, body, config)
   end
 
-  def chat(messages, functions, %OpenAIConfig{api_url: api_url} = config) do
+  @spec chat(list(message()), list(map()), OpenAIConfig.t()) ::
+          {:error, HTTPoison.Error.t()} | {:ok, map()}
+  def chat(messages, functions, %OpenAIConfig{api_url: api_url, stream: false} = config) do
     url = "#{api_url}/v1/chat/completions"
 
     %{model: model, temperature: temperature} = config
@@ -77,6 +85,12 @@ defmodule Train.Clients.OpenAI do
     }
 
     post(messages, url, body, config)
+  end
+
+  def chat(messages, functions, %OpenAIConfig{stream: true} = config) do
+    {:ok, _, stream} = stream(messages, functions, config)
+    resp = StreamReducer.reduce(stream)
+    {:ok, resp}
   end
 
   defp post(messages, url, body, %OpenAIConfig{retries: retries} = config) do
@@ -196,6 +210,41 @@ defmodule Train.Clients.OpenAI do
     }
   end
 
+  @spec stream(list(message()), list(map()), OpenAIConfig.t()) :: Enumerable.t()
+  def stream(
+        messages,
+        functions,
+        %OpenAIConfig{
+          api_url: api_url,
+          model: model,
+          temperature: temperature
+        } = config
+      ) do
+    url = "#{api_url}/v1/chat/completions"
+
+    body =
+      Jason.encode!(%{
+        model: model,
+        stream: true,
+        temperature: temperature,
+        max_tokens: OpenAIConfig.get_max_tokens(model),
+        messages: messages,
+        functions: functions
+      })
+
+    log("-- Fetching OpenAI Stream", config)
+
+    {
+      :ok,
+      messages,
+      Stream.resource(
+        fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
+        &handle_async_response/1,
+        &close_async_response/1
+      )
+    }
+  end
+
   defp close_async_response(resp) do
     :hackney.stop_async(resp)
   end
@@ -231,21 +280,92 @@ defmodule Train.Clients.OpenAI do
       |> String.split("data:")
       |> Enum.map(&String.trim/1)
       |> Enum.reject(&(&1 == ""))
-      |> Enum.reduce({"", false}, fn trimmed, {chunk, is_done?} ->
-        case Jason.decode(trimmed) do
-          {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]}} ->
-            {chunk, false}
+      |> Enum.reduce(
+        {%{}, false},
+        fn trimmed, {chunk, is_done?} ->
+          case Jason.decode(trimmed) do
+            {:ok,
+             %{
+               "choices" => [
+                 %{"delta" => %{"role" => "assistant", "function_call" => _}}
+               ]
+             } = resp} ->
+              {resp, false}
 
-          {:ok, %{"choices" => [%{"delta" => %{"content" => text}}]}} ->
-            {chunk <> text, is_done? or false}
+            {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]} = resp} ->
+              {resp, false}
 
-          {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]}} ->
-            {chunk, true}
+            {:ok, %{"choices" => [%{"delta" => %{"content" => _}}]} = resp} ->
+              {resp, is_done? or false}
 
-          {:error, %{data: "[DONE]"}} ->
-            {chunk, is_done? or true}
+            {:ok,
+             %{
+               "choices" => [
+                 %{"delta" => %{"function_call" => %{"arguments" => _}}}
+               ]
+             } = resp} ->
+              {resp, is_done? or false}
+
+            {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
+              {resp, true}
+
+            {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "function_call"}]} = resp} ->
+              {resp, true}
+
+            {:error, %{data: "[DONE]"}} ->
+              {chunk, is_done? or true}
+          end
         end
-      end)
+      )
+
+    # |> Enum.reduce(
+    #   {%{content: "", role: "assistant", args: "", function: ""}, false},
+    #   fn trimmed, {chunk, is_done?} ->
+    #     case Jason.decode(trimmed) do
+    #       {:ok,
+    #        %{
+    #          "choices" => [
+    #            %{"delta" => %{"role" => "assistant", "function_call" => function_call}}
+    #          ]
+    #        } = resp} ->
+    #         IO.puts("1 #{inspect(resp, pretty: true)}")
+    #         {chunk_update(chunk, function_call), is_done? or false}
+
+    #       {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]} = resp} ->
+    #         IO.puts("1.1 #{inspect(resp, pretty: true)}")
+    #         {chunk, false}
+
+    #       {:ok, %{"choices" => [%{"delta" => %{"content" => text}}]} = resp} ->
+    #         IO.puts("2 #{inspect(resp, pretty: true)}")
+    #         {chunk_update(chunk, text), is_done? or false}
+
+    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
+    #         IO.puts("3 #{inspect(resp, pretty: true)}")
+    #         {chunk, true}
+
+    #       {:ok,
+    #        %{
+    #          "choices" => [
+    #            %{"delta" => %{"function_call" => %{"arguments" => _} = function_call}}
+    #          ]
+    #        } = resp} ->
+    #         IO.puts("4 #{inspect(resp, pretty: true)}")
+    #         {chunk_update(chunk, function_call), is_done? or false}
+
+    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "function_call"}]} = resp} ->
+    #         IO.puts("5 #{inspect(resp, pretty: true)}")
+    #         {chunk, true}
+
+    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
+    #         IO.puts("6 #{inspect(resp, pretty: true)}")
+    #         {chunk, true}
+
+    #       {:error, %{data: "[DONE]"} = resp} ->
+    #         IO.puts("7 #{inspect(resp, pretty: true)}")
+    #         {chunk, is_done? or true}
+    #     end
+    #   end
+    # )
 
     if done? do
       {[chunk], {:done, resp}}

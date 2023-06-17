@@ -1,7 +1,8 @@
 defmodule Train.Functions.Conversational.PromptBuilder do
   alias Train.LlmChain
 
-  @spec build(LlmChain.t(), list(OpenAI.message()), list(OpenAI.message()), LlmChain.t()) :: list(OpenAI.message())
+  @spec build(LlmChain.t(), list(OpenAI.message()), list(OpenAI.message()), LlmChain.t()) ::
+          list(OpenAI.message())
   def build(
         question,
         intermediate_steps,
@@ -11,7 +12,7 @@ defmodule Train.Functions.Conversational.PromptBuilder do
         }
       ) do
     messages = [%{role: "system", content: prompt_template.for(:system)} | chat_history]
-    messages = [%{role: "user", content: question} | (messages |> Enum.reverse())]
+    messages = [%{role: "user", content: question} | messages |> Enum.reverse()]
 
     Enum.concat(
       messages |> Enum.reverse(),
