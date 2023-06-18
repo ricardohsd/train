@@ -5,7 +5,7 @@ defmodule Train.Agents.VectorAgentTest do
   alias Train.OpenAI
   alias Train.Agents.VectorPrompt
   alias Train.Agents.VectorAgent
-  alias Train.Clients.PineconeConfig
+  alias Train.Pinecone
 
   setup_all do
     HTTPoison.start()
@@ -16,7 +16,12 @@ defmodule Train.Agents.VectorAgentTest do
         tools: [],
         openai_config: OpenAI.Config.new(%{model: :"gpt-4"}),
         pinecone_config:
-          PineconeConfig.new(%{namespace: "food", topK: 5, index: "localtest", project: "1234567"})
+          Pinecone.config(%{
+            namespace: "food",
+            topK: 5,
+            index: "localtest",
+            project: "1234567"
+          })
       })
 
     %{chain: chain}

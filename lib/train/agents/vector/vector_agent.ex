@@ -7,7 +7,7 @@ defmodule Train.Agents.VectorAgent do
 
   alias Train.LlmChain
   alias Train.OpenAI
-  alias Train.Clients.Pinecone
+  alias Train.Pinecone
   alias Train.Agents.VectorPromptSpec
   alias Train.Utilities.VectorDocument
   alias Train.Tiktoken

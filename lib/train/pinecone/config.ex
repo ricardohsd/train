@@ -1,4 +1,4 @@
-defmodule Train.Clients.PineconeConfig do
+defmodule Train.Pinecone.Config do
   defstruct namespace: nil, index: nil, project: nil, topK: 1
 
   @type t :: %{

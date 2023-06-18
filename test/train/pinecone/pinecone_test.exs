@@ -1,11 +1,10 @@
-defmodule Train.Clients.PineconeTest do
+defmodule Train.PineconeTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   alias Train.OpenAI
   alias Train.OpenAI
-  alias Train.Clients.PineconeConfig
-  alias Train.Clients.Pinecone
+  alias Train.Pinecone
 
   @prompt "o que é o divorcio?"
 
@@ -22,7 +21,7 @@ defmodule Train.Clients.PineconeTest do
 
     use_cassette "pinecone/embedding" do
       {:ok, %{"matches" => matches}} =
-        Pinecone.query(embeddings, %PineconeConfig{namespace: nil, topK: 2})
+        Pinecone.query(embeddings, %Pinecone.Config{namespace: nil, topK: 2})
 
       assert length(matches) == 2
 
@@ -40,7 +39,7 @@ defmodule Train.Clients.PineconeTest do
   test "with nil embeddings" do
     use_cassette "pinecone/nil" do
       {:error, %HTTPoison.Response{status_code: 400}} =
-        Pinecone.query(nil, %PineconeConfig{namespace: nil})
+        Pinecone.query(nil, %Pinecone.Config{namespace: nil})
     end
   end
 end

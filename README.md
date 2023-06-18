@@ -49,7 +49,7 @@ Example: Given that cooking recipes were ingested on the `food` namespace, the f
 chain =
   Train.LlmChain.new(%{
     pinecone_config:
-      Train.Clients.PineconeConfig.new(%{
+      Train.Pinecone.config(%{
         namespace: "food",
         topK: 5,
         index: "localtest",
@@ -68,7 +68,7 @@ text = "Cascão da Silva Pereira Alves (born January 14, 1969) is an Brazilian m
 chain =
   Train.LlmChain.new(%{
     pinecone_config:
-      Train.Clients.PineconeConfig.new(%{
+      Train.Pinecone.config(%{
         namespace: "food",
         topK: 5,
         index: "localtest",

@@ -2,7 +2,7 @@ defmodule Train.Clients.VectorIngestionTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Train.Clients.PineconeConfig
+  alias Train.Pinecone
   alias Train.OpenAI
   alias Train.Agents.VectorIngestion
 
@@ -15,7 +15,12 @@ defmodule Train.Clients.VectorIngestionTest do
         tools: [],
         openai_config: OpenAI.Config.new(%{model: :"gpt-3.5-turbo"}),
         pinecone_config:
-          PineconeConfig.new(%{namespace: "food", topK: 5, index: "localtest", project: "1234567"})
+          Pinecone.config(%{
+            namespace: "food",
+            topK: 5,
+            index: "localtest",
+            project: "1234567"
+          })
       })
 
     %{chain: chain}

@@ -1,6 +1,6 @@
 defmodule Train.Agents.VectorIngestion do
   alias Train.LlmChain
-  alias Train.Clients.Pinecone
+  alias Train.Pinecone
   alias Train.OpenAI
   alias Train.TextSplitter.TokenTextSplitter
 

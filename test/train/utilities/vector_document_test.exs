@@ -3,8 +3,7 @@ defmodule Train.Utilities.VectorDocumentTest do
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   alias Train.OpenAI
-  alias Train.Clients.PineconeConfig
-  alias Train.Clients.Pinecone
+  alias Train.Pinecone
   alias Train.Utilities.VectorDocument
 
   @prompt "o que é o divorcio?"
@@ -23,7 +22,7 @@ defmodule Train.Utilities.VectorDocumentTest do
 
       resp =
         use_cassette "pinecone/embedding" do
-          Pinecone.query(embeddings, %PineconeConfig{namespace: nil, topK: 2})
+          Pinecone.query(embeddings, %Pinecone.Config{namespace: nil, topK: 2})
         end
 
       subject = VectorDocument.parse(resp)
@@ -40,7 +39,7 @@ defmodule Train.Utilities.VectorDocumentTest do
 
     test "when given empty pinecone response" do
       use_cassette "pinecone/nil" do
-        assert Pinecone.query(nil, %PineconeConfig{namespace: nil})
+        assert Pinecone.query(nil, %Pinecone.Config{namespace: nil})
                |> VectorDocument.parse() == nil
       end
     end

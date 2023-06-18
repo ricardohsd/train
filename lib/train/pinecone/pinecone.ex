@@ -1,4 +1,4 @@
-defmodule Train.Clients.Pinecone do
+defmodule Train.Pinecone do
   @moduledoc """
   Basic Pinecone implementation to query & insert vectors.
 
@@ -9,15 +9,19 @@ defmodule Train.Clients.Pinecone do
 
   @type embeddings :: [float()]
 
-  alias Train.Clients.PineconeConfig
+  alias Train.Pinecone.Config
+
+  def config(opts \\ %{}) do
+    Config.new(opts)
+  end
 
   @doc """
   Vectory similarity query.
   """
-  @spec query(embeddings(), PineconeConfig.t()) :: {:ok, term()} | {:error, term()}
+  @spec query(embeddings(), Config.t()) :: {:ok, term()} | {:error, term()}
   def query(
         embeddings,
-        %PineconeConfig{namespace: namespace, index: index, project: project} = config
+        %Config{namespace: namespace, index: index, project: project} = config
       ) do
     body =
       Jason.encode!(%{
@@ -33,8 +37,8 @@ defmodule Train.Clients.Pinecone do
     |> parse_response()
   end
 
-  @spec upsert(any(), PineconeConfig.t()) :: {:ok, term()} | {:error, term()}
-  def upsert(vectors, %PineconeConfig{namespace: namespace, index: index, project: project}) do
+  @spec upsert(any(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def upsert(vectors, %Config{namespace: namespace, index: index, project: project}) do
     body =
       %{
         namespace: namespace,
