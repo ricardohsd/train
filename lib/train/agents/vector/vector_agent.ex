@@ -32,8 +32,7 @@ defmodule Train.Agents.VectorAgent do
       count_tokens(main_prompt, result, chain)
       {:ok, messages, result}
     else
-      {:error, :timeout} -> {:error, "timeout"}
-      {:error, err} -> {:error, err}
+      {:error, messages, :timeout} -> {:error, messages, "timeout"}
     end
   end
 

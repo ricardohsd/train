@@ -15,7 +15,8 @@ defmodule Train.OpenAI.Stream do
         %Config{
           api_url: api_url,
           model: model,
-          temperature: temperature
+          temperature: temperature,
+          stream: true
         } = config
       ) do
     url = "#{api_url}/v1/chat/completions"
@@ -34,7 +35,7 @@ defmodule Train.OpenAI.Stream do
       :ok,
       messages,
       Stream.resource(
-        fn -> Client.post(url, body, stream: true) end,
+        fn -> Client.post(url, body, config) end,
         &handle_async_response/1,
         &close_async_response/1
       )
@@ -48,7 +49,8 @@ defmodule Train.OpenAI.Stream do
         %Config{
           api_url: api_url,
           model: model,
-          temperature: temperature
+          temperature: temperature,
+          stream: true
         } = config
       ) do
     url = "#{api_url}/v1/chat/completions"
@@ -68,7 +70,7 @@ defmodule Train.OpenAI.Stream do
       :ok,
       messages,
       Stream.resource(
-        fn -> Client.post(url, body, stream: true) end,
+        fn -> Client.post(url, body, config) end,
         &handle_async_response/1,
         &close_async_response/1
       )

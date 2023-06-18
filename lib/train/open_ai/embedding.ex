@@ -1,4 +1,6 @@
 defmodule Train.OpenAI.Embedding do
+  require Logger
+
   alias Train.OpenAI.Config
   alias Train.OpenAI.Client
 
@@ -10,6 +12,8 @@ defmodule Train.OpenAI.Embedding do
       model: "text-embedding-ada-002",
       input: prompt
     }
+
+    Logger.debug("-- Fetching OpenAI embeddings, Config: #{inspect(config)}")
 
     Client.post(url, body, [], config)
   end
