@@ -78,6 +78,7 @@ defmodule Train.Functions.ZeroShotReact.Chat do
     args = Jason.decode!(arguments)
 
     tool = Functions.get_tool(tools, function_call["name"])
+    function_call = Functions.format_function_call(tool, function_call)
 
     {:ok, tool_result} = tool.query(args["query"], chain)
 

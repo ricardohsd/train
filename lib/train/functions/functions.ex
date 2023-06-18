@@ -1,6 +1,14 @@
 defmodule Train.Functions do
   alias Train.Tools
 
+  @spec format_function_call(Tools.Spec.t(), map()) :: map()
+  def format_function_call(_, %{"arguments" => _, "name" => _} = func) do
+    func
+  end
+  def format_function_call(tool, %{"arguments" => _} = func) do
+    Map.put(func, "name", tool.name())
+  end
+
   @spec format_tools(Tools.Spec.t()) :: map()
   def format_tools(tools) do
     Enum.map(tools, fn tool -> tool.to_func() end)
