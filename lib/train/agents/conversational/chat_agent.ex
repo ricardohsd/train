@@ -7,7 +7,6 @@ defmodule Train.Agents.Conversational.ChatAgent do
   alias Train.LlmChain
   alias Train.Agents.Conversational.PromptBuilder
 
-
   @doc """
   Ask a question to the given chain.
 

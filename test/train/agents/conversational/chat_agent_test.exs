@@ -4,7 +4,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
 
   alias Train.LlmChain
   alias Train.Agents.Conversational.ChatAgent
-  alias Train.OpenAI.Config
+  alias Train.OpenAI
 
   setup_all do
     Logger.configure(level: :warning)
@@ -27,7 +27,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
       Train.LlmChain.new(%{
         memory: nil,
         tools: tools,
-        openai_config: Config.new(%{model: :"gpt-3.5-turbo"})
+        openai_config: OpenAI.Config.new(%{model: :"gpt-3.5-turbo"})
       })
 
     %{chain: chain}
@@ -65,9 +65,9 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
           )
 
         assert [
-                %{content: "In which city was she born?", role: "user"},
-                %{content: "Hamburg, Germany", role: "assistant"}
-              ] == messages
+                 %{content: "In which city was she born?", role: "user"},
+                 %{content: "Hamburg, Germany", role: "assistant"}
+               ] == messages
 
         assert response == "Hamburg, Germany"
       end
@@ -85,7 +85,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
 
     test "memory agent's pid must be present", %{chain: %LlmChain{tools: tools}} do
       {:error, error} =
-        %LlmChain{tools: tools, memory: {nil, nil}, openai_config: Config.new()}
+        %LlmChain{tools: tools, memory: {nil, nil}, openai_config: OpenAI.Config.new()}
         |> ChatAgent.run("What is a continent?")
 
       assert "memory agent pid can't be null" == error
@@ -103,7 +103,7 @@ defmodule Train.Agents.Conversational.ChatAgentTest do
       {:error, error} =
         %LlmChain{
           tools: tools,
-          openai_config: Config.new(),
+          openai_config: OpenAI.Config.new(),
           memory: {self(), Train.Memory.BufferAgent},
           max_iterations: 0
         }

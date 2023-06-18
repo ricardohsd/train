@@ -2,7 +2,7 @@ defmodule Train.Clients.PineconeTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Train.OpenAI.Config
+  alias Train.OpenAI
   alias Train.OpenAI
   alias Train.Clients.PineconeConfig
   alias Train.Clients.Pinecone
@@ -11,7 +11,7 @@ defmodule Train.Clients.PineconeTest do
 
   setup_all do
     HTTPoison.start()
-    %{config: Config.new(%{model: :"gpt-3.5-turbo"})}
+    %{config: OpenAI.Config.new(%{model: :"gpt-3.5-turbo"})}
   end
 
   test "fetching vectors for a given embedding", %{config: config} do

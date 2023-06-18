@@ -2,7 +2,7 @@ defmodule Train.Agents.VectorAgentTest do
   use ExUnit.Case, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Train.OpenAI.Config
+  alias Train.OpenAI
   alias Train.Agents.VectorPrompt
   alias Train.Agents.VectorAgent
   alias Train.Clients.PineconeConfig
@@ -14,7 +14,7 @@ defmodule Train.Agents.VectorAgentTest do
       Train.LlmChain.new(%{
         memory: nil,
         tools: [],
-        openai_config: Config.new(%{model: :"gpt-4"}),
+        openai_config: OpenAI.Config.new(%{model: :"gpt-4"}),
         pinecone_config:
           PineconeConfig.new(%{namespace: "food", topK: 5, index: "localtest", project: "1234567"})
       })
