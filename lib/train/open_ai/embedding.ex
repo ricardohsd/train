@@ -15,6 +15,6 @@ defmodule Train.OpenAI.Embedding do
 
     Logger.debug("-- Fetching OpenAI embeddings, Config: #{inspect(config)}")
 
-    Client.post(url, body, [], config)
+    Client.post(url, body, [], %{config | stream: false})
   end
 end
