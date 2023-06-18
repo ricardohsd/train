@@ -33,6 +33,7 @@ defmodule Train.Agents.VectorAgent do
       {:ok, messages, result}
     else
       {:error, messages, :timeout} -> {:error, messages, "timeout"}
+      err -> err
     end
   end
 

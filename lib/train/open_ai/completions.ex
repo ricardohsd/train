@@ -46,30 +46,36 @@ defmodule Train.OpenAI.Completions do
     end
   end
 
-  def fetch(messages, %Config{stream: true} = config) do
-    {:ok, _, stream} = Stream.call(messages, config)
+  def fetch(messages, %Config{model: model, temperature: temperature, stream: true} = config) do
+    body = %{
+      model: model,
+      temperature: temperature,
+      max_tokens: Config.get_max_tokens(model),
+      messages: messages
+    }
+
+    {:ok, stream} = Stream.call(body, config)
     resp = StreamReducer.reduce(stream)
     {:ok, resp}
   end
 
   @spec fetch(list(OpenAI.message()), list(map()), Config.t()) ::
           {:error, HTTPoison.Error.t()} | {:ok, map()}
+  def fetch(messages, functions, options \\ [force: false], config)
+
   def fetch(
         messages,
         functions,
-        %Config{api_url: api_url, stream: false, retries: retries} = config
+        options,
+        %Config{
+          api_url: api_url,
+          retries: retries,
+          stream: false
+        } = config
       ) do
     url = "#{api_url}/v1/chat/completions"
 
-    %{model: model, temperature: temperature} = config
-
-    body = %{
-      model: model,
-      temperature: temperature,
-      max_tokens: Config.get_max_tokens(model),
-      messages: messages,
-      functions: functions
-    }
+    body = payload(messages, functions, options, config)
 
     options = [recv_timeout: config.recv_timeout, timeout: config.timeout]
 
@@ -89,9 +95,45 @@ defmodule Train.OpenAI.Completions do
     end
   end
 
-  def fetch(messages, functions, %Config{stream: true} = config) do
-    {:ok, _, stream} = Stream.call(messages, functions, config)
+  def fetch(
+        messages,
+        functions,
+        options,
+        %Config{
+          stream: true
+        } = config
+      ) do
+    body = payload(messages, functions, options, config)
+
+    {:ok, stream} = Stream.call(body, config)
     resp = StreamReducer.reduce(stream)
     {:ok, resp}
+  end
+
+  # Forces a function calling when force: true
+  # Useful when querying the AI first.
+  defp payload(messages, functions, [force: true], config) do
+    payload = payload(messages, functions, [force: false], config)
+    Map.put(payload, :function_call, %{name: List.first(functions)[:name]})
+  end
+
+  defp payload(
+         messages,
+         functions,
+         [force: false],
+         %Config{
+           model: model,
+           temperature: temperature,
+           stream: stream
+         }
+       ) do
+    %{
+      model: model,
+      stream: stream,
+      temperature: temperature,
+      max_tokens: Config.get_max_tokens(model),
+      messages: messages,
+      functions: functions
+    }
   end
 end

@@ -24,7 +24,12 @@ defmodule Train.OpenAI.Config do
   @type model :: :"gpt-4" | :"gpt-3.5-turbo" | :"gpt-3.5-turbo-16k" | :"gpt-3.5-turbo-16k-0613"
 
   @api_url "https://api.openai.com"
-  @max_tokens %{:"gpt-3.5-turbo" => 2048, :"gpt-4" => 4096, :"gpt-3.5-turbo-16k" => 8192, :"gpt-3.5-turbo-16k-0613" => 8192}
+  @max_tokens %{
+    :"gpt-3.5-turbo" => 2048,
+    :"gpt-4" => 4096,
+    :"gpt-3.5-turbo-16k" => 8192,
+    :"gpt-3.5-turbo-16k-0613" => 8192
+  }
 
   def new(opts \\ %{}) do
     config = %__MODULE__{api_url: @api_url, model: :"gpt-4"}

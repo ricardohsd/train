@@ -98,10 +98,9 @@ defmodule Train.Functions.Conversational.ChatAgent do
          %{
            "choices" => [
              %{
-               "finish_reason" => "function_call",
+               "finish_reason" => finish_reason,
                "message" => %{
-                 "role" => "assistant",
-                 "function_call" => %{"arguments" => arguments, "name" => name} = function_call
+                 "function_call" => %{"arguments" => arguments} = function_call
                }
              }
              | _tail
@@ -111,14 +110,18 @@ defmodule Train.Functions.Conversational.ChatAgent do
          intermediate_steps,
          chat_history,
          %LlmChain{functions: tools, max_iterations: iteration} = chain
-       ) do
+       )
+       when finish_reason in ["function_call", "stop"] do
     args = Jason.decode!(arguments)
-    {:ok, tool_result} = Functions.get_tool(tools, name).query(args["query"], chain)
+
+    tool = Functions.get_tool(tools, function_call["name"])
+
+    {:ok, tool_result} = tool.query(args["query"], chain)
 
     log("\nIt: #{iteration}, Tool response: #{inspect(tool_result)}", chain)
 
     assistant = %{role: "assistant", content: nil, function_call: function_call}
-    function = %{role: "function", name: name, content: "#{tool_result}"}
+    function = %{role: "function", name: tool.name, content: "#{tool_result}"}
 
     intermediate_steps = [function | [assistant | intermediate_steps]]
 
@@ -138,7 +141,7 @@ defmodule Train.Functions.Conversational.ChatAgent do
            "choices" => [
              %{
                "finish_reason" => "stop",
-               "message" => %{"role" => "assistant", "content" => result}
+               "message" => %{"content" => result}
              }
              | _tail
            ]

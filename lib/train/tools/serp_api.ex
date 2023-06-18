@@ -11,6 +11,11 @@ defmodule Train.Tools.SerpApi do
   @name "google_search"
 
   @impl true
+  def name() do
+    @name
+  end
+
+  @impl true
   def to_func() do
     %{
       name: @name,

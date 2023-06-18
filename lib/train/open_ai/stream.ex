@@ -3,72 +3,25 @@ defmodule Train.OpenAI.Stream do
 
   alias Train.OpenAI.Config
   alias Train.OpenAI.Client
-  alias Train.OpenAI
 
   @doc """
   Queries OpenAI's completions endpoint with
   a single or multiple messages and streams the response.
   """
-  @spec call(list(OpenAI.message()), Config.t()) :: Enumerable.t()
+  @spec call(String.t(), Config.t()) :: Enumerable.t()
   def call(
-        messages,
+        body,
         %Config{
           api_url: api_url,
-          model: model,
-          temperature: temperature,
           stream: true
         } = config
       ) do
     url = "#{api_url}/v1/chat/completions"
-
-    body = %{
-      model: model,
-      stream: true,
-      temperature: temperature,
-      max_tokens: Config.get_max_tokens(model),
-      messages: messages
-    }
-
-    Logger.debug("-- Fetching OpenAI Stream #{inspect(config)}")
-
-    {
-      :ok,
-      messages,
-      Stream.resource(
-        fn -> Client.post(url, body, config) end,
-        &handle_async_response/1,
-        &close_async_response/1
-      )
-    }
-  end
-
-  @spec call(list(OpenAI.message()), list(map()), Config.t()) :: Enumerable.t()
-  def call(
-        messages,
-        functions,
-        %Config{
-          api_url: api_url,
-          model: model,
-          temperature: temperature,
-          stream: true
-        } = config
-      ) do
-    url = "#{api_url}/v1/chat/completions"
-
-    body = %{
-      model: model,
-      stream: true,
-      temperature: temperature,
-      max_tokens: Config.get_max_tokens(model),
-      messages: messages,
-      functions: functions
-    }
 
     Logger.debug("-- Fetching OpenAI Stream with functions #{inspect(config)}")
 
     {
       :ok,
-      messages,
       Stream.resource(
         fn -> Client.post(url, body, config) end,
         &handle_async_response/1,

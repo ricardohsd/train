@@ -3,6 +3,8 @@ defmodule Train.Tools.Spec do
 
   @type t :: module()
 
+  @callback name() :: String.t()
+
   @callback to_func() :: map()
 
   @doc """

@@ -11,6 +11,11 @@ defmodule Train.Tools.BasicCalculator do
   @name "calculator"
 
   @impl true
+  def name() do
+    @name
+  end
+
+  @impl true
   def to_func() do
     %{
       name: @name,
