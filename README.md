@@ -14,6 +14,21 @@ def deps do
 end
 ```
 
+## Credentials
+The following credentials are required:
+- OPENAI_API_KEY
+
+When using Pinecone it's required to set:
+- PINECONE_API_KEY
+- PINECONE_API_ENV
+- PINECONE_INDEX_NAME
+- PINECONE_PROJECT_NAME
+
+And to search on Google through [Serpapi](http://serpapi.com):
+- SERPAPI_API_KEY
+
+When running on [Livebook](https://livebook.dev) the credentials with `LB_` will be loaded, as in `LB_OPENAI_API_KEY`.
+
 ## Examples
 
 ### Conversational agent

@@ -1,6 +1,7 @@
 defmodule Train.Tools.SerpApi do
   @behaviour Train.Tools.Spec
 
+  alias Train.Credentials
   alias Train.LlmChain
 
   require Logger
@@ -102,7 +103,7 @@ defmodule Train.Tools.SerpApi do
     url = "https://serpapi.com/search.json"
 
     params = %{
-      "api_key" => System.get_env("SERPAPI_API_KEY"),
+      "api_key" => Credentials.get(:serpapi, :api_key),
       "engine" => "google",
       "google_domain" => "google.com",
       "q" => query

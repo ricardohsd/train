@@ -1,6 +1,7 @@
 defmodule Train.OpenAI.Client do
   require Logger
 
+  alias Train.Credentials
   alias Train.OpenAI.Config
   alias Train.Tiktoken
 
@@ -47,7 +48,7 @@ defmodule Train.OpenAI.Client do
     [
       Accept: "application/json",
       "Content-Type": "application/json",
-      Authorization: "Bearer #{System.get_env("OPENAI_API_KEY")}"
+      Authorization: "Bearer #{Credentials.get(:open_ai, :api_key)}"
     ]
   end
 end

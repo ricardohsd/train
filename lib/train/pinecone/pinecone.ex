@@ -9,6 +9,7 @@ defmodule Train.Pinecone do
 
   @type embeddings :: [float()]
 
+  alias Train.Credentials
   alias Train.Pinecone.Config
 
   def config(opts \\ %{}) do
@@ -85,12 +86,12 @@ defmodule Train.Pinecone do
   end
 
   defp url({:vectors, index, project}, path) do
-    pinecone_env = System.get_env("PINECONE_API_ENV")
+    pinecone_env = Credentials.get(:pinecone, :env)
     "https://#{index}-#{project}.svc.#{pinecone_env}.pinecone.io/#{path}"
   end
 
   defp url(:indexes, path) do
-    pinecone_env = System.get_env("PINECONE_API_ENV")
+    pinecone_env = Credentials.get(:pinecone, :env)
     "https://controller.#{pinecone_env}.pinecone.io/#{path}"
   end
 
@@ -98,7 +99,7 @@ defmodule Train.Pinecone do
     [
       Accept: "application/json",
       "Content-Type": "application/json",
-      "Api-Key": System.get_env("PINECONE_API_KEY")
+      "Api-Key": Credentials.get(:pinecone, :api_key)
     ]
   end
 end

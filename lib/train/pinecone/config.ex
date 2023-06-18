@@ -1,4 +1,6 @@
 defmodule Train.Pinecone.Config do
+  alias Train.Credentials
+
   defstruct namespace: nil, index: nil, project: nil, topK: 1
 
   @type t :: %{
@@ -10,8 +12,8 @@ defmodule Train.Pinecone.Config do
 
   def new(opts \\ %{}) do
     config = %__MODULE__{
-      index: System.get_env("PINECONE_INDEX_NAME"),
-      project: System.get_env("PINECONE_PROJECT_NAME")
+      index: Credentials.get(:pinecone, :index),
+      project: Credentials.get(:pinecone, :project)
     }
 
     Map.merge(config, opts)
