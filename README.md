@@ -35,10 +35,10 @@ tools = [
 ]
 chain = Train.LlmChain.new(%{memory: {memory_pid, Train.Memory.BufferAgent}, tools: tools})
 
-{:ok, response} = chain |> Train.Chains.ConversationChain.run("Who is Angela Merkel?")
+{:ok, response} = chain |> Train.Agents.Conversational.ChatAgent.run("Who is Angela Merkel?")
 # Angela Dorothea Merkel is a German former politician and scientist who served as Chancellor of Germany from November 2005 to December 2021. A member of the Christian Democratic Union, she previously served as Leader of the Opposition from 2002 to 2005 and as Leader of the Christian Democratic Union from 2000 to 2018.
 
-{:ok, response} = chain |> Train.Chains.ConversationChain.run("Where was she born?")
+{:ok, response} = chain |> Train.Agents.Conversational.ChatAgent.run("Where was she born?")
 # Angela Merkel was born in Hamburg, Germany.
 ```
 
@@ -83,7 +83,7 @@ Train.Agents.VectorIngestion.ingest(chain, text, %{about: "Langchain"}, 30)
 ```
 
 ### Zero Shot React Agent
-Based on Langchain's `chat-zero-shot-react-description`. Doesn't use memory, for that check the `Train.Chains.ConversationChain` agent.
+Based on Langchain's `chat-zero-shot-react-description`. It doesn't use memory, for that check `Train.Agents.Conversational.ChatAgent`.
 ```elixir
 
 tools = [
