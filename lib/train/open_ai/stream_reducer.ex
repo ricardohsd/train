@@ -1,4 +1,4 @@
-defmodule Train.Clients.StreamReducer do
+defmodule Train.OpenAI.StreamReducer do
   def reduce(stream) do
     stream
     |> Enum.to_list()

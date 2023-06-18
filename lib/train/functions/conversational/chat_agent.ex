@@ -90,7 +90,7 @@ defmodule Train.Functions.Conversational.ChatAgent do
 
       process(response, question, intermediate_steps, chat_history, chain)
     else
-      err -> err
+      {:error, err} -> {:error, err}
     end
   end
 

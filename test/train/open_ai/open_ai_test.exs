@@ -14,7 +14,7 @@ defmodule Train.OpenAITest do
 
   test "single user chat completion", %{config: config} do
     use_cassette "open_ai/chat" do
-      {:ok, _, response} = OpenAI.generate("What are continents?", config)
+      {:ok, _, response} = OpenAI.chat("What are continents?", config)
 
       assert response ==
                "Continents are large, continuous land masses on the Earth's surface that are separated by oceans or other bodies of water. There are seven continents on Earth: Africa, Antarctica, Asia, Australia, Europe, North America, and South America. Each continent has its own unique geography, climate, and natural resources."
@@ -27,7 +27,7 @@ defmodule Train.OpenAITest do
         %{"content" => "How many continents exist?", "role" => "user"}
       ]
 
-      {:ok, _, response} = OpenAI.generate(messages, config)
+      {:ok, _, response} = OpenAI.chat(messages, config)
 
       assert response ==
                "There are seven continents: Africa, Antarctica, Asia, Australia/Oceania, Europe, North America, and South America."
@@ -36,7 +36,7 @@ defmodule Train.OpenAITest do
 
   test "chat completion timeout", %{config: config} do
     use_cassette "open_ai/chat_timeout" do
-      {:error, _, reason} = OpenAI.generate("What are continents?", config)
+      {:error, _, reason} = OpenAI.chat("What are continents?", config)
 
       assert reason == "timeout"
     end

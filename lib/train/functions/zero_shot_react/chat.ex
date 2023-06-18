@@ -53,7 +53,7 @@ defmodule Train.Functions.ZeroShotReact.Chat do
 
       process(response, question, intermediate_steps, prompt, chain)
     else
-      err -> err
+      {:error, err} -> {:error, err}
     end
   end
 

@@ -2,127 +2,49 @@ defmodule Train.OpenAI do
   require Logger
 
   alias Train.OpenAI.Config
-  alias Train.Tiktoken
-  alias Train.Clients.StreamReducer
+  alias Train.OpenAI.Embedding
+  alias Train.OpenAI.Completions
 
   @type message :: %{
           required(:role) => String.t(),
           required(:content) => String.t()
         }
 
-  @spec generate(list(message()), Config.t()) ::
-          {:error, [binary], binary} | {:ok, any, binary}
-  @spec generate(String.t(), Config.t()) ::
-          {:error, [binary], binary} | {:ok, any, binary}
-  def generate(messages, %Config{stream: false} = config) when is_list(messages) do
-    chat!(messages, config)
-  end
-
-  def generate(messages, %Config{stream: true} = config) when is_list(messages) do
-    {:ok, messages, stream} = stream(:messages, messages, config)
-    %{"choices" => [%{"message" => %{"content" => content}}]} = StreamReducer.reduce(stream)
-
-    {:ok, messages, content}
-  end
-
-  def generate(message, config) when is_binary(message) do
-    chat!([%{role: "user", content: message}], config)
-  end
-
   @doc """
   Queries OpenAI chat completions with the given messages and return the human response.
   Accepts gpt-4 or gpt-3.5-turbo.
   """
-  @spec chat!(list(message()), Config.t()) ::
+  @spec chat(list(message()), Config.t()) ::
           {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
-  def chat!(messages, config) do
-    with {:ok, %{"choices" => [resp | _]}} <- chat(messages, config),
+  @spec chat(String.t(), Config.t()) ::
+          {:ok, list(String.t()), String.t()} | {:error, list(String.t()), String.t()}
+  def chat(messages, config) when is_list(messages) do
+    with {:ok, %{"choices" => [resp | _]}} <- Completions.fetch(messages, config),
          %{"message" => %{"role" => "assistant", "content" => content}} <- resp do
       {:ok, messages, content}
     else
       {:error, %Jason.DecodeError{data: data}} -> {:error, messages, data}
-      {:error, %HTTPoison.Error{reason: "timeout", id: nil}} -> {:error, messages, "timeout"}
+      {:error, err} -> {:error, messages, err}
     end
+  end
+
+  def chat(message, config) when is_binary(message) do
+    chat([%{role: "user", content: message}], config)
   end
 
   @doc """
-  Queries OpenAI chat completions with the given messages and returns the API's response.
-  Accepts gpt-4 or gpt-3.5-turbo.
+  Queries OpenAI with function calling.
   """
-  @spec chat(list(message()), Config.t()) :: {:error, HTTPoison.Error.t()} | {:ok, map()}
-  def chat(_, %Config{retries: 0}) do
-    {:error, %HTTPoison.Error{reason: "timeout", id: nil}}
-  end
-
-  def chat(messages, %Config{api_url: api_url, stream: false} = config) do
-    url = "#{api_url}/v1/chat/completions"
-
-    %{model: model, temperature: temperature} = config
-
-    body = %{
-      model: model,
-      temperature: temperature,
-      max_tokens: Config.get_max_tokens(model),
-      messages: messages
-    }
-
-    post(messages, url, body, config)
-  end
-
-  @spec chat(list(message()), list(map()), Config.t()) ::
-          {:error, HTTPoison.Error.t()} | {:ok, map()}
-  def chat(messages, functions, %Config{api_url: api_url, stream: false} = config) do
-    url = "#{api_url}/v1/chat/completions"
-
-    %{model: model, temperature: temperature} = config
-
-    body = %{
-      model: model,
-      temperature: temperature,
-      max_tokens: Config.get_max_tokens(model),
-      messages: messages,
-      functions: functions
-    }
-
-    post(messages, url, body, config)
-  end
-
-  def chat(messages, functions, %Config{stream: true} = config) do
-    {:ok, _, stream} = stream(messages, functions, config)
-    resp = StreamReducer.reduce(stream)
-    {:ok, resp}
-  end
-
-  defp post(messages, url, body, %Config{retries: retries} = config) do
-    json = Jason.encode!(body)
-
-    tokens = Tiktoken.count_tokens(json)
-    log("-- Tokens: #{tokens}", config)
-
-    options = [recv_timeout: config.recv_timeout, timeout: config.timeout]
-
-    log("-- Fetching OpenAI chat", config)
-
-    case HTTPoison.post(url, json, headers(), options) do
-      {:error, %HTTPoison.Error{reason: :timeout}} ->
-        log("-- Retrying #{retries}", config)
-        Process.sleep(config.retry_backoff)
-        chat(messages, %Config{config | retries: retries - 1})
-
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        Jason.decode(body)
-
-      other ->
-        other
-    end
+  def chat(messages, functions, config) do
+    Completions.fetch(messages, functions, config)
   end
 
   @doc """
   Queries OpenAI's embedding API and return the :ok and the list of embeddings.
   """
   @spec embedding(String.t(), Config.t()) :: {:ok, [float()]} | {:error, String.t()}
-  def embedding(prompt, %Config{api_url: api_url}) do
-    with {:ok, %{"data" => [data | _]}} <- _embedding(prompt, api_url),
+  def embedding(query, config) do
+    with {:ok, %{"data" => [data | _]}} <- Embedding.fetch(query, config),
          %{"embedding" => embeddings} <- data do
       {:ok, embeddings}
     else
@@ -146,243 +68,5 @@ defmodule Train.OpenAI do
       {:ok, embeddings} -> embeddings
       {:error, error} -> raise "embedding! failed: #{inspect(error)}"
     end
-  end
-
-  defp _embedding(prompt, api_url) do
-    url = "#{api_url}/v1/embeddings"
-
-    body =
-      Jason.encode!(%{
-        model: "text-embedding-ada-002",
-        input: prompt
-      })
-
-    case HTTPoison.post(url, body, headers()) do
-      {:ok, %HTTPoison.Response{status_code: code, body: body}}
-      when is_integer(code) and code >= 200 and code < 300 ->
-        Jason.decode(body)
-
-      {:ok, %HTTPoison.Response{status_code: code} = resp}
-      when is_integer(code) and code >= 300 ->
-        {:error, resp}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        Logger.warning("Embedding call errored with: #{reason}")
-        {:error, reason}
-    end
-  end
-
-  @doc """
-  Queries OpenAI's completions endpoint with
-  a single or multiple messages and streams the response.
-  """
-  @spec stream(:messages, list(message()), Config.t()) :: Enumerable.t()
-  def stream(
-        :messages,
-        messages,
-        %Config{
-          api_url: api_url,
-          model: model,
-          temperature: temperature
-        } = config
-      ) do
-    url = "#{api_url}/v1/chat/completions"
-
-    body =
-      Jason.encode!(%{
-        model: model,
-        stream: true,
-        temperature: temperature,
-        max_tokens: Config.get_max_tokens(model),
-        messages: messages
-      })
-
-    log("-- Fetching OpenAI Stream", config)
-
-    {
-      :ok,
-      messages,
-      Stream.resource(
-        fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
-        &handle_async_response/1,
-        &close_async_response/1
-      )
-    }
-  end
-
-  @spec stream(list(message()), list(map()), Config.t()) :: Enumerable.t()
-  def stream(
-        messages,
-        functions,
-        %Config{
-          api_url: api_url,
-          model: model,
-          temperature: temperature
-        } = config
-      ) do
-    url = "#{api_url}/v1/chat/completions"
-
-    body =
-      Jason.encode!(%{
-        model: model,
-        stream: true,
-        temperature: temperature,
-        max_tokens: Config.get_max_tokens(model),
-        messages: messages,
-        functions: functions
-      })
-
-    log("-- Fetching OpenAI Stream", config)
-
-    {
-      :ok,
-      messages,
-      Stream.resource(
-        fn -> HTTPoison.post!(url, body, headers(), stream_to: self(), async: :once) end,
-        &handle_async_response/1,
-        &close_async_response/1
-      )
-    }
-  end
-
-  defp close_async_response(resp) do
-    :hackney.stop_async(resp)
-  end
-
-  defp handle_async_response({:done, resp}) do
-    {:halt, resp}
-  end
-
-  defp handle_async_response(%HTTPoison.AsyncResponse{id: id} = resp) do
-    receive do
-      %HTTPoison.AsyncStatus{id: ^id, code: code} ->
-        Logger.debug("openai,request,status,#{inspect(code)}")
-        HTTPoison.stream_next(resp)
-        {[], resp}
-
-      %HTTPoison.AsyncHeaders{id: ^id, headers: headers} ->
-        Logger.debug("openai,request,headers,#{inspect(headers)}")
-        HTTPoison.stream_next(resp)
-        {[], resp}
-
-      %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
-        HTTPoison.stream_next(resp)
-        parse_chunk(chunk, resp)
-
-      %HTTPoison.AsyncEnd{id: ^id} ->
-        {:halt, resp}
-    end
-  end
-
-  defp parse_chunk(chunk, resp) do
-    {chunk, done?} =
-      chunk
-      |> String.split("data:")
-      |> Enum.map(&String.trim/1)
-      |> Enum.reject(&(&1 == ""))
-      |> Enum.reduce(
-        {%{}, false},
-        fn trimmed, {chunk, is_done?} ->
-          case Jason.decode(trimmed) do
-            {:ok,
-             %{
-               "choices" => [
-                 %{"delta" => %{"role" => "assistant", "function_call" => _}}
-               ]
-             } = resp} ->
-              {resp, false}
-
-            {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]} = resp} ->
-              {resp, false}
-
-            {:ok, %{"choices" => [%{"delta" => %{"content" => _}}]} = resp} ->
-              {resp, is_done? or false}
-
-            {:ok,
-             %{
-               "choices" => [
-                 %{"delta" => %{"function_call" => %{"arguments" => _}}}
-               ]
-             } = resp} ->
-              {resp, is_done? or false}
-
-            {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
-              {resp, true}
-
-            {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "function_call"}]} = resp} ->
-              {resp, true}
-
-            {:error, %{data: "[DONE]"}} ->
-              {chunk, is_done? or true}
-          end
-        end
-      )
-
-    # |> Enum.reduce(
-    #   {%{content: "", role: "assistant", args: "", function: ""}, false},
-    #   fn trimmed, {chunk, is_done?} ->
-    #     case Jason.decode(trimmed) do
-    #       {:ok,
-    #        %{
-    #          "choices" => [
-    #            %{"delta" => %{"role" => "assistant", "function_call" => function_call}}
-    #          ]
-    #        } = resp} ->
-    #         IO.puts("1 #{inspect(resp, pretty: true)}")
-    #         {chunk_update(chunk, function_call), is_done? or false}
-
-    #       {:ok, %{"choices" => [%{"delta" => %{"role" => "assistant"}}]} = resp} ->
-    #         IO.puts("1.1 #{inspect(resp, pretty: true)}")
-    #         {chunk, false}
-
-    #       {:ok, %{"choices" => [%{"delta" => %{"content" => text}}]} = resp} ->
-    #         IO.puts("2 #{inspect(resp, pretty: true)}")
-    #         {chunk_update(chunk, text), is_done? or false}
-
-    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
-    #         IO.puts("3 #{inspect(resp, pretty: true)}")
-    #         {chunk, true}
-
-    #       {:ok,
-    #        %{
-    #          "choices" => [
-    #            %{"delta" => %{"function_call" => %{"arguments" => _} = function_call}}
-    #          ]
-    #        } = resp} ->
-    #         IO.puts("4 #{inspect(resp, pretty: true)}")
-    #         {chunk_update(chunk, function_call), is_done? or false}
-
-    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "function_call"}]} = resp} ->
-    #         IO.puts("5 #{inspect(resp, pretty: true)}")
-    #         {chunk, true}
-
-    #       {:ok, %{"choices" => [%{"delta" => %{}, "finish_reason" => "stop"}]} = resp} ->
-    #         IO.puts("6 #{inspect(resp, pretty: true)}")
-    #         {chunk, true}
-
-    #       {:error, %{data: "[DONE]"} = resp} ->
-    #         IO.puts("7 #{inspect(resp, pretty: true)}")
-    #         {chunk, is_done? or true}
-    #     end
-    #   end
-    # )
-
-    if done? do
-      {[chunk], {:done, resp}}
-    else
-      {[chunk], resp}
-    end
-  end
-
-  defp headers() do
-    [
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: "Bearer #{System.get_env("OPENAI_API_KEY")}"
-    ]
-  end
-
-  defp log(message, %Config{log_level: log_level}) do
-    Logger.log(log_level, message)
   end
 end

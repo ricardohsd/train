@@ -27,6 +27,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
       {:ok, messages, response}
     else
       {:error, messages, err} -> {:error, messages, err}
+      {:error, err} -> {:error, err}
     end
   end
 
@@ -44,7 +45,7 @@ defmodule Train.Agents.ZeroShotReact.Chat do
          %LlmChain{max_iterations: iteration, openai_config: openai_config} = chain
        ) do
     with messages <- PromptBuilder.build(chain, question, intermediate_steps),
-         {:ok, messages, choice} <- OpenAI.generate(messages, openai_config) do
+         {:ok, messages, choice} <- OpenAI.chat(messages, openai_config) do
       log("\nIt: #{iteration}, Messages: #{inspect(messages, pretty: true)}\n\n", chain)
       log("\nIt: #{iteration}, LLm response: #{inspect(choice, pretty: true)}", chain)
 

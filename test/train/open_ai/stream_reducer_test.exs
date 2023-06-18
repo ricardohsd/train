@@ -1,7 +1,7 @@
-defmodule Train.Clients.StreamReducerTest do
+defmodule Train.OpenAI.StreamReducerTest do
   use ExUnit.Case, async: true
 
-  alias Train.Clients.StreamReducer
+  alias Train.OpenAI.StreamReducer
 
   test "reduce content response" do
     stream = [
