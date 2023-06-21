@@ -10,11 +10,16 @@ defmodule Train.FunctionsTest do
     end
 
     test "adds the tool name when name not present", %{tool: tool} do
-      assert  %{"arguments" => "foo", "name" => "google_search"} == Functions.format_function_call(tool, %{"arguments" => "foo"})
+      assert %{"arguments" => "foo", "name" => "google_search"} ==
+               Functions.format_function_call(tool, %{"arguments" => "foo"})
     end
 
     test "doesn't add the tool name when name is present", %{tool: tool} do
-      assert  %{"arguments" => "foo", "name" => "calculator"} == Functions.format_function_call(tool, %{"arguments" => "foo", "name" => "calculator"})
+      assert %{"arguments" => "foo", "name" => "calculator"} ==
+               Functions.format_function_call(tool, %{
+                 "arguments" => "foo",
+                 "name" => "calculator"
+               })
     end
   end
 

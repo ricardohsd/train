@@ -2,7 +2,6 @@ defmodule Train.LlmChain do
   alias Train.Tools
   alias Train.OpenAI
   alias Train.Pinecone
-  alias Train.PromptSpec
   alias Train.Memory.MemorySpec
   alias Train.Agents.Conversational.Prompts
 
@@ -13,7 +12,7 @@ defmodule Train.LlmChain do
             log_level: :info,
             tools: [],
             functions: [],
-            prompt_template: Prompts
+            prompt_template: Prompts.new()
 
   @type t :: %__MODULE__{
           max_iterations: integer(),
@@ -23,7 +22,7 @@ defmodule Train.LlmChain do
           log_level: atom(),
           tools: list(Tools.tool_wrapper()),
           functions: list(Tools.Spec.t()),
-          prompt_template: PromptSpec.t()
+          prompt_template: Prompts.t()
         }
 
   @doc """

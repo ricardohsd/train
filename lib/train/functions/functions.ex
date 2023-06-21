@@ -5,6 +5,7 @@ defmodule Train.Functions do
   def format_function_call(_, %{"arguments" => _, "name" => _} = func) do
     func
   end
+
   def format_function_call(tool, %{"arguments" => _} = func) do
     Map.put(func, "name", tool.name())
   end
