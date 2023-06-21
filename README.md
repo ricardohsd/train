@@ -72,7 +72,7 @@ chain =
       })
   })
 {:ok, history, response} =
-  Train.Agents.VectorAgent.call(chain, "How to bake pão de queijo?", Train.Agents.VectorPrompt)
+  Train.Agents.VectorAgent.call(chain, "How to bake pão de queijo?", Train.Agents.VectorPrompt.to_s())
 ```
 
 ### Vector ingestion
@@ -93,7 +93,7 @@ chain =
 
 Train.Agents.VectorIngestion.ingest(chain, text, %{about: "Langchain"}, 30)
 {:ok, _history, response} =
-  Train.Agents.VectorAgent.call(chain, "Who is Cascão Pereira?", Train.Agents.VectorPrompt)
+  Train.Agents.VectorAgent.call(chain, "Who is Cascão Pereira?", Train.Agents.VectorPrompt.to_s())
 # "Cascão Pereira, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, where he serves as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context provided"
 ```
 

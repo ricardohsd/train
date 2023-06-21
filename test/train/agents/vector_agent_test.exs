@@ -34,7 +34,7 @@ defmodule Train.Agents.VectorAgentTest do
   } do
     use_cassette "agents/vector" do
       {:ok, [%{content: _, role: "user"} | _], response} =
-        VectorAgent.call(chain, @question, VectorPrompt)
+        VectorAgent.call(chain, @question, VectorPrompt.to_s())
 
       expected =
         "Cascão Pereira Alves, full name Cascão da Silva Pereira Alves, is a Brazilian musician born on January 14, 1969. He is the founder of the rock band Casca Dura, serving as the lead singer, guitarist, and principal songwriter. Before forming Casca Dura, he was the drummer for the rock band Solitarios from 1990 to 1994.\n\nReferences:\n- Context"
@@ -45,14 +45,14 @@ defmodule Train.Agents.VectorAgentTest do
 
   test "validates that Pinecone config is given", %{chain: chain} do
     chain = %{chain | pinecone_config: nil}
-    {:error, error} = VectorAgent.call(chain, @question, VectorPrompt)
+    {:error, error} = VectorAgent.call(chain, @question, VectorPrompt.to_s())
 
     assert error == "Pinecone config can't be null"
   end
 
   test "validates that OpenAI config is given", %{chain: chain} do
     chain = %{chain | openai_config: nil}
-    {:error, error} = VectorAgent.call(chain, @question, VectorPrompt)
+    {:error, error} = VectorAgent.call(chain, @question, VectorPrompt.to_s())
 
     assert error == "OpenAI config can't be null"
   end

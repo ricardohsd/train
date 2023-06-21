@@ -4,15 +4,15 @@ defmodule Train.Agents.VectorAgent do
   It is good for generating a response based on a document stored in the db.
   """
   import Train.LevelLogger
+  import Train.Utilities.Format
 
   alias Train.LlmChain
   alias Train.OpenAI
   alias Train.Pinecone
-  alias Train.Agents.VectorPromptSpec
   alias Train.Utilities.VectorDocument
   alias Train.Tiktoken
 
-  @spec call(LlmChain.t(), String.t(), VectorPromptSpec.t()) ::
+  @spec call(LlmChain.t(), String.t(), String.t()) ::
           {:ok, String.t()} | {:error, String.t()}
   def call(
         %LlmChain{openai_config: openai_config, pinecone_config: pinecone_config} = chain,
@@ -27,7 +27,7 @@ defmodule Train.Agents.VectorAgent do
          {:ok, embeddings} <- OpenAI.embedding(question, openai_config),
          {:ok, vector} <- Pinecone.query(Enum.take(embeddings, dimension), pinecone_config),
          document <- VectorDocument.parse(vector),
-         main_prompt <- prompt.with(question, document.text, document.metadata),
+         main_prompt <- prompt_with(prompt, question, document.text, document.metadata),
          {:ok, messages, result} <- OpenAI.chat(main_prompt, openai_config) do
       count_tokens(main_prompt, result, chain)
       {:ok, messages, result}
@@ -35,6 +35,13 @@ defmodule Train.Agents.VectorAgent do
       {:error, messages, :timeout} -> {:error, messages, "timeout"}
       err -> err
     end
+  end
+
+  defp prompt_with(prompt, question, context, metadata) do
+    prompt
+    |> format(:question, question)
+    |> format(:context, context)
+    |> format(:metadata, metadata)
   end
 
   defp count_tokens(prompt, result, chain) do
