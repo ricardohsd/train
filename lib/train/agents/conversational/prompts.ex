@@ -1,10 +1,11 @@
 defmodule Train.Agents.Conversational.Prompts do
-  defstruct system: nil, human: nil, scratchpad: nil
+  defstruct system: nil, human: nil, scratchpad: nil, agents: %{}
 
   @type t :: %__MODULE__{
           system: String.t(),
           human: String.t(),
-          scratchpad: String.t()
+          scratchpad: String.t(),
+          agents: map()
         }
 
   def new(opts \\ %{}) do
