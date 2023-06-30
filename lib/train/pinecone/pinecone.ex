@@ -19,6 +19,26 @@ defmodule Train.Pinecone do
   @doc """
   Vectory similarity query.
   """
+  @spec query(String.t(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def query(
+        vector_id,
+        %Config{namespace: namespace, index: index, project: project} = config
+      )
+      when is_binary(vector_id) do
+    body =
+      Jason.encode!(%{
+        "id" => vector_id,
+        "topK" => config.topK || 4,
+        "includeValues" => true,
+        "includeMetadata" => true,
+        "namespace" => namespace
+      })
+
+    url({:vectors, index, project}, "query")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
+  end
+
   @spec query(embeddings(), Config.t()) :: {:ok, term()} | {:error, term()}
   def query(
         embeddings,
@@ -34,6 +54,60 @@ defmodule Train.Pinecone do
       })
 
     url({:vectors, index, project}, "query")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
+  end
+
+  @spec query(embeddings(), map(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def query(
+        embeddings,
+        filter,
+        %Config{namespace: namespace, index: index, project: project} = config
+      ) do
+    body =
+      Jason.encode!(%{
+        "vector" => embeddings,
+        "filter" => filter,
+        "topK" => config.topK || 4,
+        "includeValues" => true,
+        "includeMetadata" => true,
+        "namespace" => namespace
+      })
+
+    url({:vectors, index, project}, "query")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
+  end
+
+  @spec delete(atom(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def delete(
+        :all,
+        %Config{namespace: namespace, index: index, project: project}
+      ) do
+    body =
+      Jason.encode!(%{
+        "deleteAll" => true,
+        "namespace" => namespace
+      })
+
+    url({:vectors, index, project}, "vectors/delete")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
+  end
+
+  @spec delete(map(), Config.t()) :: {:ok, term()} | {:error, term()}
+  def delete(
+        filter,
+        %Config{namespace: namespace, index: index, project: project}
+      ) do
+    body =
+      Jason.encode!(%{
+        "deleteAll" => false,
+        "filter" => filter,
+        "namespace" => namespace
+      })
+
+    url({:vectors, index, project}, "vectors/delete")
     |> HTTPoison.post(body, headers())
     |> parse_response()
   end
