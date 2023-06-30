@@ -43,16 +43,21 @@ defmodule Train.Pinecone do
     body =
       %{
         namespace: namespace,
-        vectors:
-          Enum.map(vectors, fn %{content: vector, metadata: metadata} ->
-            %{id: UUID.uuid4(), values: vector, metadata: metadata}
-          end)
+        vectors: Enum.map(vectors, fn vector -> map_vector(vector) end)
       }
       |> Jason.encode!()
 
     url({:vectors, index, project}, "vectors/upsert")
     |> HTTPoison.post(body, headers())
     |> parse_response()
+  end
+
+  defp map_vector(%{content: vector, metadata: metadata}) do
+    %{id: UUID.uuid4(), values: vector, metadata: metadata}
+  end
+
+  defp map_vector(%{id: _, values: _, metadata: _} = vector) do
+    vector
   end
 
   @spec indexes() :: {:ok, list(String.t())} | {:error, any()}
