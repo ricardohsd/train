@@ -17,7 +17,7 @@ defmodule Train.Pinecone do
   end
 
   @doc """
-  Vectory similarity query.
+  Queries a namespace using a vector id or with a list of embeddings.
   """
   @spec query(String.t(), Config.t()) :: {:ok, term()} | {:error, term()}
   def query(
@@ -79,6 +79,15 @@ defmodule Train.Pinecone do
     |> parse_response()
   end
 
+  @doc """
+  Deletes vectors by id, with metadata, or the entire namespace.
+
+  ## Examples
+
+      iex> Pinecone.delete(:all, pinecone_config)
+      iex> Pinecone.delete(%{tag: "foo"}, pinecone_config)
+      iex> Pinecone.delete("136a14fe-5ca3-486e-9fc8-b7b0844ec5a3"}, pinecone_config)
+  """
   @spec delete(atom(), Config.t()) :: {:ok, term()} | {:error, term()}
   def delete(
         :all,
@@ -99,7 +108,8 @@ defmodule Train.Pinecone do
   def delete(
         filter,
         %Config{namespace: namespace, index: index, project: project}
-      ) do
+      )
+      when is_map(filter) do
     body =
       Jason.encode!(%{
         "deleteAll" => false,
@@ -112,6 +122,28 @@ defmodule Train.Pinecone do
     |> parse_response()
   end
 
+  @spec delete(list(String.t()), Config.t()) :: {:ok, term()} | {:error, term()}
+  def delete(
+        ids,
+        %Config{namespace: namespace, index: index, project: project}
+      )
+      when is_list(ids) do
+    body =
+      Jason.encode!(%{
+        "deleteAll" => false,
+        "ids" => ids,
+        "namespace" => namespace
+      })
+
+    url({:vectors, index, project}, "vectors/delete")
+    |> HTTPoison.post(body, headers())
+    |> parse_response()
+  end
+
+  @doc """
+  Writes vectors into a namespace.
+  It overwrites previous values for an existing vector id.
+  """
   @spec upsert(any(), Config.t()) :: {:ok, term()} | {:error, term()}
   def upsert(vectors, %Config{namespace: namespace, index: index, project: project}) do
     body =
@@ -134,6 +166,9 @@ defmodule Train.Pinecone do
     vector
   end
 
+  @doc """
+  List Pinecone indexes.
+  """
   @spec indexes() :: {:ok, list(String.t())} | {:error, any()}
   def indexes() do
     url(:indexes, "databases")
@@ -141,6 +176,9 @@ defmodule Train.Pinecone do
     |> parse_response()
   end
 
+  @doc """
+  Get a description of an index.
+  """
   @spec index(String.t()) :: {:ok, map()} | {:error, any()}
   def index(index_name) do
     url(:indexes, "databases/#{index_name}")
